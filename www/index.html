@@ -1,0 +1,4739 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Suika Player</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        /* ========== RESET & VARIABLES ========== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #7b4397;
+            --secondary: #dc2430;
+            --dark: #0f0c29;
+            --dark-light: #1a1a2e;
+            --gray: #a0a0c0;
+            --light: #ffffff;
+            --sidebar-width: 280px;
+            --player-height: 90px;
+            --gradient: linear-gradient(135deg, var(--primary), var(--secondary));
+            --nav-pink: #FF2D55;
+            --nav-pink-dark: #e61e45;
+            --hover-bg: rgba(255, 255, 255, 0.07);
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: var(--dark);
+            color: var(--light);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* ========== SPLASH SCREEN ========== */
+        .splash-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--dark);
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: opacity 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+            pointer-events: none;
+        }
+
+        .splash-screen.fade-out {
+            opacity: 0;
+        }
+
+        .splash-content {
+            text-align: center;
+            transform: translateY(0);
+            animation: floatIn 1s ease-out;
+        }
+
+        .splash-logo-wrapper {
+            margin-bottom: 30px;
+        }
+
+        .splash-icon {
+            width: 120px;
+            height: 120px;
+            margin: 0 auto 20px;
+            background: var(--gradient);
+            border-radius: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 4rem;
+            color: var(--light);
+            box-shadow: 0 20px 40px rgba(123, 67, 151, 0.3);
+            animation: pulse 2s infinite;
+            position: relative;
+        }
+
+        .splash-icon::before {
+            content: '';
+            position: absolute;
+            top: -5px;
+            left: -5px;
+            right: -5px;
+            bottom: -5px;
+            background: var(--gradient);
+            border-radius: 35px;
+            opacity: 0.3;
+            animation: ripple 2s infinite;
+        }
+
+        .splash-icon i {
+            animation: spin 8s linear infinite;
+            filter: drop-shadow(0 4px 8px rgba(0,0,0,0.3));
+        }
+
+        .splash-logo-text {
+            font-size: 3rem;
+            font-weight: 800;
+            background: var(--gradient);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            letter-spacing: 2px;
+            text-shadow: 0 4px 15px rgba(123, 67, 151, 0.3);
+            animation: pulse 2s infinite;
+        }
+
+        .splash-loader {
+            width: 200px;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+            margin: 30px auto 20px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .splash-progress {
+            width: 0%;
+            height: 100%;
+            background: var(--gradient);
+            border-radius: 4px;
+            animation: progress 2.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+            position: relative;
+        }
+
+        .splash-progress::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 20px;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            animation: shimmer 1.5s infinite;
+        }
+
+        .splash-footer {
+            color: var(--gray);
+            font-size: 1rem;
+            font-weight: 300;
+            letter-spacing: 2px;
+            opacity: 0;
+            animation: fadeIn 1s ease-out 1.5s forwards;
+            text-transform: uppercase;
+        }
+
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+                opacity: 1;
+            }
+            50% {
+                transform: scale(1.05);
+                opacity: 0.9;
+            }
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        @keyframes ripple {
+            0% {
+                transform: scale(1);
+                opacity: 0.3;
+            }
+            50% {
+                transform: scale(1.1);
+                opacity: 0.1;
+            }
+            100% {
+                transform: scale(1);
+                opacity: 0.3;
+            }
+        }
+
+        @keyframes spin {
+            from {
+                transform: rotate(0deg);
+            }
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        @keyframes progress {
+            0% {
+                width: 0%;
+            }
+            20% {
+                width: 20%;
+            }
+            40% {
+                width: 45%;
+            }
+            60% {
+                width: 65%;
+            }
+            80% {
+                width: 85%;
+            }
+            100% {
+                width: 100%;
+            }
+        }
+
+        @keyframes shimmer {
+            0% {
+                transform: translateX(-100%);
+            }
+            100% {
+                transform: translateX(200%);
+            }
+        }
+
+        @keyframes floatIn {
+            0% {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* ========== FIXED LAYOUT ========== */
+        .app-container {
+            display: flex;
+            min-height: 100vh;
+            padding-bottom: var(--player-height);
+            position: relative;
+            width: 100%;
+            overflow-x: hidden;
+            opacity: 0;
+            animation: appFadeIn 1s ease-out 2.5s forwards;
+        }
+
+        @keyframes appFadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        /* Sidebar - Fixed Width */
+        .sidebar {
+            width: var(--sidebar-width);
+            background: rgba(26, 26, 46, 0.95);
+            backdrop-filter: blur(10px);
+            border-right: 1px solid rgba(255, 255, 255, 0.05);
+            position: fixed;
+            left: 0;
+            top: 0;
+            bottom: var(--player-height);
+            z-index: 100;
+            padding: 25px 20px;
+            overflow-y: auto;
+            transition: transform 0.3s ease;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 40px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .logo-icon {
+            width: 45px;
+            height: 45px;
+            background: var(--gradient);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+
+        .logo-text {
+            font-size: 1.5rem;
+            font-weight: 700;
+            background: var(--gradient);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .nav-section {
+            margin-bottom: 30px;
+        }
+
+        .nav-title {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--gray);
+            margin-bottom: 15px;
+            padding-left: 10px;
+        }
+
+        .nav-links {
+            list-style: none;
+        }
+
+        .nav-links li {
+            margin-bottom: 8px;
+        }
+
+        .nav-links a {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 12px 15px;
+            color: var(--light);
+            text-decoration: none;
+            border-radius: 10px;
+            transition: all 0.3s;
+            font-weight: 500;
+        }
+
+        .nav-links a:hover,
+        .nav-links a.active {
+            background: rgba(123, 67, 151, 0.2);
+            color: var(--light);
+        }
+
+        .nav-links a i {
+            width: 20px;
+            text-align: center;
+            font-size: 1.1rem;
+        }
+
+        .playlist-section {
+            margin-top: 20px;
+        }
+
+        .playlist-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 15px;
+            cursor: pointer;
+            border-radius: 8px;
+            transition: all 0.3s;
+        }
+
+        .playlist-item:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .playlist-img {
+            width: 40px;
+            height: 40px;
+            border-radius: 6px;
+            object-fit: cover;
+        }
+
+        .playlist-info h4 {
+            font-size: 0.9rem;
+            margin-bottom: 3px;
+        }
+
+        .playlist-info p {
+            font-size: 0.8rem;
+            color: var(--gray);
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            margin-left: var(--sidebar-width);
+            width: calc(100% - var(--sidebar-width));
+            transition: margin-left 0.3s ease;
+            overflow-x: hidden;
+        }
+
+        /* ========== TOP BAR - FIXED & PROFESIONAL ========== */
+        .top-bar {
+            background: #FF2D55;
+            padding: 12px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            width: 100%;
+            box-shadow: 0 4px 20px rgba(255, 45, 85, 0.3);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        /* Left Section - Mobile Menu Button */
+        .top-bar-left {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            flex-shrink: 0;
+        }
+
+        .mobile-menu-btn {
+            display: none;
+            background: rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            font-size: 1.3rem;
+            cursor: pointer;
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+            backdrop-filter: blur(5px);
+        }
+
+        .mobile-menu-btn:hover {
+            background: rgba(255, 255, 255, 0.25);
+            transform: translateY(-2px);
+        }
+
+        .mobile-menu-btn i {
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));
+        }
+
+        /* Center Section - Search */
+        .top-bar-center {
+            flex: 1;
+            max-width: 600px;
+            margin: 0 30px;
+        }
+
+        .search-container {
+            width: 100%;
+            position: relative;
+        }
+
+        .search-box {
+            width: 100%;
+            padding: 12px 20px 12px 50px;
+            background: rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            border-radius: 40px;
+            color: white;
+            font-size: 0.95rem;
+            transition: all 0.3s;
+            backdrop-filter: blur(5px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .search-box::placeholder {
+            color: rgba(255, 255, 255, 0.8);
+            font-weight: 400;
+        }
+
+        .search-box:focus {
+            outline: none;
+            background: rgba(255, 255, 255, 0.25);
+            border-color: white;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 18px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 1rem;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .clear-search {
+            position: absolute;
+            right: 18px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: rgba(255, 255, 255, 0.9);
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 0.8rem;
+        }
+
+        .clear-search:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-50%) scale(1.1);
+        }
+
+        /* Right Section - User Actions */
+        .top-bar-right {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            flex-shrink: 0;
+        }
+
+        .theme-toggle,
+        .notification-btn {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+            backdrop-filter: blur(5px);
+            font-size: 1.1rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .theme-toggle:hover,
+        .notification-btn:hover {
+            background: rgba(255, 255, 255, 0.25);
+            transform: translateY(-2px);
+        }
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+            padding: 6px 15px 6px 12px;
+            border-radius: 40px;
+            transition: all 0.3s;
+            position: relative;
+            background: rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(5px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .user-profile:hover {
+            background: rgba(255, 255, 255, 0.25);
+            transform: translateY(-2px);
+        }
+
+        .user-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #ffffff, #ffe0e5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            color: #FF2D55;
+            font-size: 1rem;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .user-name {
+            font-weight: 500;
+            color: white;
+            font-size: 0.95rem;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        /* Content Area */
+        .content-area {
+            padding: 30px 40px;
+            width: 100%;
+            max-width: 100%;
+            overflow-x: hidden;
+        }
+
+        /* ========== HERO BANNER ========== */
+        .hero-banner {
+            background: var(--gradient);
+            border-radius: 20px;
+            padding: 40px;
+            margin-bottom: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: relative;
+            overflow: hidden;
+            width: 100%;
+        }
+
+        .hero-content {
+            flex: 1;
+            z-index: 2;
+        }
+
+        .hero-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .hero-subtitle {
+            font-size: 1.1rem;
+            opacity: 0.9;
+            margin-bottom: 25px;
+            max-width: 500px;
+        }
+
+        .hero-btn {
+            background: var(--light);
+            color: var(--primary);
+            border: none;
+            padding: 12px 30px;
+            border-radius: 30px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .hero-image {
+            width: 250px;
+            height: 250px;
+            border-radius: 20px;
+            object-fit: cover;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            z-index: 2;
+        }
+
+        /* ========== CAROUSEL SECTION ========== */
+        .carousel-section {
+            width: 100%;
+            margin-bottom: 50px;
+            position: relative;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-right: 10px;
+            width: 100%;
+        }
+
+        .section-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            white-space: normal;
+        }
+
+        .view-all {
+            color: var(--gray);
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: color 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            flex-shrink: 0;
+        }
+
+        .view-all:hover {
+            color: var(--light);
+        }
+
+        .carousel-container {
+            width: 100%;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .carousel-track {
+            display: flex;
+            gap: 20px;
+            overflow-x: auto;
+            overflow-y: hidden;
+            scroll-snap-type: x mandatory;
+            padding-bottom: 15px;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+        }
+        
+        .carousel-track::-webkit-scrollbar {
+            display: none;
+        }
+
+        /* Music Card */
+        .music-card {
+            flex: 0 0 auto;
+            width: 200px;
+            scroll-snap-align: start;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 15px;
+            overflow: hidden;
+            cursor: pointer;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            position: relative;
+        }
+
+        .music-card:hover {
+            transform: translateY(-8px);
+            background: rgba(255, 255, 255, 0.07);
+            border-color: rgba(123, 67, 151, 0.3);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .music-card.active::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: var(--gradient);
+            z-index: 1;
+        }
+
+        .card-img-container {
+            width: 100%;
+            height: 160px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .card-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+            transition: transform 0.3s ease;
+        }
+
+        .music-card:hover .card-img {
+            transform: scale(1.05);
+        }
+
+        .card-content {
+            padding: 15px;
+            width: 100%;
+        }
+
+        .card-title {
+            font-weight: 600;
+            margin-bottom: 5px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            font-size: 0.95rem;
+            width: 100%;
+        }
+
+        .card-artist {
+            color: var(--gray);
+            font-size: 0.85rem;
+            margin-bottom: 10px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            width: 100%;
+        }
+
+        .card-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 10px;
+            width: 100%;
+        }
+
+        .card-duration {
+            color: var(--gray);
+            font-size: 0.8rem;
+            white-space: nowrap;
+        }
+
+        .play-btn {
+            background: var(--gradient);
+            color: white;
+            border: none;
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            flex-shrink: 0;
+        }
+
+        .play-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 5px 15px rgba(123, 67, 151, 0.4);
+        }
+
+        /* ========== VERTICAL LIST SECTION (SPOTIFY STYLE) ========== */
+        .vertical-list-section {
+            width: 100%;
+            margin-top: 30px;
+            margin-bottom: 50px;
+            position: relative;
+        }
+
+        .list-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            width: 100%;
+        }
+
+        .list-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--light);
+        }
+
+        .list-view-all {
+            color: var(--gray);
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: color 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .list-view-all:hover {
+            color: var(--light);
+        }
+
+        .song-list-container {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .song-list-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 16px;
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 8px;
+            transition: all 0.2s ease;
+            cursor: pointer;
+            border: 1px solid transparent;
+        }
+
+        .song-list-item:hover {
+            background: var(--hover-bg);
+            border-color: rgba(255, 255, 255, 0.05);
+        }
+
+        .song-list-item.active {
+            background: rgba(123, 67, 151, 0.15);
+            border-left: 4px solid var(--primary);
+        }
+
+        .list-item-img {
+            width: 55px;
+            height: 55px;
+            border-radius: 6px;
+            object-fit: cover;
+            margin-right: 18px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .list-item-info {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+        }
+
+        .list-item-title {
+            font-weight: 600;
+            font-size: 1rem;
+            margin-bottom: 4px;
+            color: var(--light);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .list-item-artist {
+            font-size: 0.85rem;
+            color: var(--gray);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .list-item-menu {
+            color: var(--gray);
+            font-size: 1.2rem;
+            padding: 10px;
+            border-radius: 50%;
+            transition: all 0.2s;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .song-list-item:hover .list-item-menu {
+            color: var(--light);
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .list-item-menu i {
+            pointer-events: none;
+        }
+
+        /* Search Results */
+        .search-results-section {
+            display: none;
+            width: 100%;
+        }
+
+        .search-results-section.active {
+            display: block;
+        }
+
+        .results-info {
+            color: var(--gray);
+            margin-bottom: 25px;
+            font-size: 1rem;
+        }
+
+        .search-results-carousel {
+            display: flex;
+            gap: 20px;
+            overflow-x: auto;
+            overflow-y: hidden;
+            scroll-snap-type: x mandatory;
+            padding-bottom: 15px;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+        }
+        
+        .search-results-carousel::-webkit-scrollbar {
+            display: none;
+        }
+
+        .search-results-carousel .music-card {
+            flex: 0 0 auto;
+            width: 200px;
+            scroll-snap-align: start;
+        }
+
+        /* History Section */
+        .history-section {
+            display: none;
+            width: 100%;
+        }
+
+        .history-section.active {
+            display: block;
+        }
+
+        .history-actions {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+        }
+
+        .history-btn {
+            background: rgba(255, 255, 255, 0.07);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: var(--light);
+            padding: 8px 20px;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-family: 'Poppins', sans-serif;
+            font-size: 0.9rem;
+        }
+
+        .history-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .history-btn.active {
+            background: var(--gradient);
+            border-color: transparent;
+        }
+
+        .no-history {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--gray);
+            width: 100%;
+        }
+
+        .history-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 25px;
+            width: 100%;
+        }
+
+        .history-grid .music-card {
+            width: 100%;
+            flex: none;
+        }
+
+        /* Account Menu */
+        .account-menu {
+            position: absolute;
+            top: 70px;
+            right: 30px;
+            width: 320px;
+            background: rgba(26, 26, 46, 0.95);
+            backdrop-filter: blur(15px);
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            z-index: 1001;
+            opacity: 0;
+            transform: translateY(-10px);
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .account-menu.active {
+            opacity: 1;
+            transform: translateY(0);
+            visibility: visible;
+        }
+
+        .account-header {
+            padding: 25px 25px 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .account-avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: var(--gradient);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .account-info h3 {
+            font-size: 1.1rem;
+            margin-bottom: 5px;
+        }
+
+        .account-info p {
+            color: var(--gray);
+            font-size: 0.9rem;
+        }
+
+        .account-status {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            margin-top: 5px;
+            font-size: 0.8rem;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            background: #4CAF50;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+
+        .account-menu-list {
+            list-style: none;
+            padding: 15px 0;
+        }
+
+        .account-menu-item {
+            padding: 12px 25px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            color: var(--light);
+            text-decoration: none;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .account-menu-item:hover {
+            background: rgba(123, 67, 151, 0.2);
+        }
+
+        .account-menu-item i {
+            width: 20px;
+            text-align: center;
+            color: var(--gray);
+        }
+
+        .account-footer {
+            padding: 20px 25px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .account-stats {
+            display: flex;
+            gap: 15px;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-weight: 600;
+            font-size: 1.1rem;
+            background: var(--gradient);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .stat-label {
+            font-size: 0.75rem;
+            color: var(--gray);
+        }
+
+        .logout-btn {
+            background: rgba(220, 36, 48, 0.2);
+            color: #ff6b6b;
+            border: 1px solid rgba(220, 36, 48, 0.3);
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-family: 'Poppins', sans-serif;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        /* Fullscreen Player */
+        .fullscreen-player {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, var(--dark) 0%, #1a1a2e 100%);
+            z-index: 2000;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 30px;
+            overflow-y: auto;
+        }
+
+        .fullscreen-player.active {
+            display: flex;
+        }
+
+        .close-fullscreen {
+            position: absolute;
+            top: 30px;
+            right: 30px;
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            color: var(--light);
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2001;
+        }
+
+        /* Now Playing Bar */
+        .now-playing-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: var(--player-height);
+            background: rgba(26, 26, 46, 0.95);
+            backdrop-filter: blur(15px);
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            display: flex;
+            align-items: center;
+            padding: 0 30px;
+            z-index: 1000;
+        }
+
+        .now-playing-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            width: 25%;
+        }
+
+        .now-playing-img {
+            width: 60px;
+            height: 60px;
+            border-radius: 10px;
+            object-fit: cover;
+            cursor: pointer;
+            transition: transform 0.3s;
+        }
+
+        .now-playing-text h4 {
+            font-weight: 600;
+            margin-bottom: 5px;
+            font-size: 0.95rem;
+        }
+
+        .now-playing-text p {
+            color: var(--gray);
+            font-size: 0.85rem;
+        }
+
+        .now-playing-controls {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            max-width: 600px;
+        }
+
+        .control-buttons {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            margin-bottom: 12px;
+        }
+
+        .control-btn {
+            background: transparent;
+            border: none;
+            color: var(--light);
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .play-pause-btn {
+            background: var(--gradient);
+            width: 45px;
+            height: 45px;
+            font-size: 1.3rem;
+        }
+
+        .progress-container {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .progress-bar {
+            flex: 1;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 2px;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .progress {
+            height: 100%;
+            width: 0%;
+            background: var(--gradient);
+            border-radius: 2px;
+            transition: width 0.1s linear;
+        }
+
+        .time {
+            font-size: 0.8rem;
+            color: var(--gray);
+            min-width: 40px;
+        }
+
+        .now-playing-extra {
+            width: 25%;
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .volume-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            width: 150px;
+        }
+
+        .volume-slider {
+            flex: 1;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 2px;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .volume-progress {
+            height: 100%;
+            width: 70%;
+            background: var(--gradient);
+            border-radius: 2px;
+        }
+
+        /* Queue Sidebar */
+        .queue-sidebar {
+            position: fixed;
+            right: 0;
+            top: 0;
+            bottom: var(--player-height);
+            width: 350px;
+            background: rgba(26, 26, 46, 0.95);
+            backdrop-filter: blur(10px);
+            border-left: 1px solid rgba(255, 255, 255, 0.05);
+            padding: 25px;
+            overflow-y: auto;
+            transform: translateX(100%);
+            transition: transform 0.3s ease;
+            z-index: 95;
+        }
+
+        .queue-sidebar.active {
+            transform: translateX(0);
+        }
+
+        .queue-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .queue-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+        }
+
+        .close-queue {
+            background: transparent;
+            border: none;
+            color: var(--gray);
+            font-size: 1.2rem;
+            cursor: pointer;
+        }
+
+        .queue-list {
+            list-style: none;
+        }
+
+        .queue-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 12px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-bottom: 10px;
+        }
+
+        .queue-item:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .queue-item.active {
+            background: rgba(123, 67, 151, 0.2);
+            border-left: 3px solid var(--primary);
+        }
+
+        .queue-img {
+            width: 50px;
+            height: 50px;
+            border-radius: 8px;
+            object-fit: cover;
+        }
+
+        .queue-info {
+            flex: 1;
+        }
+
+        .queue-info h4 {
+            font-size: 0.95rem;
+            margin-bottom: 3px;
+        }
+
+        .queue-info p {
+            font-size: 0.85rem;
+            color: var(--gray);
+        }
+
+        .queue-duration {
+            color: var(--gray);
+            font-size: 0.85rem;
+        }
+
+        /* ========== MOBILE RESPONSIVE ========== */
+        @media (max-width: 1200px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+            .sidebar.active {
+                transform: translateX(0);
+            }
+            .main-content {
+                margin-left: 0;
+                width: 100%;
+            }
+            .mobile-menu-btn {
+                display: flex;
+            }
+            .top-bar-left {
+                display: flex;
+            }
+        }
+
+        @media (max-width: 992px) {
+            .hero-image {
+                width: 200px;
+                height: 200px;
+            }
+            .music-card {
+                width: 180px;
+            }
+            .card-img-container {
+                height: 140px;
+            }
+            .search-results-carousel .music-card {
+                width: 180px;
+            }
+            .top-bar-center {
+                margin: 0 20px;
+            }
+            .user-name {
+                display: none;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .top-bar {
+                padding: 12px 20px;
+            }
+            .top-bar-center {
+                margin: 0 15px;
+            }
+            .theme-toggle,
+            .notification-btn {
+                width: 40px;
+                height: 40px;
+            }
+            .user-profile {
+                padding: 6px 12px;
+            }
+            .content-area {
+                padding: 20px;
+            }
+            .hero-banner {
+                flex-direction: column;
+                text-align: center;
+                gap: 30px;
+            }
+            .hero-content {
+                text-align: center;
+            }
+            .hero-title {
+                font-size: 2rem;
+            }
+            .music-card {
+                width: 160px;
+            }
+            .card-img-container {
+                height: 130px;
+            }
+            .card-content {
+                padding: 12px;
+            }
+            .section-title,
+            .list-title {
+                font-size: 1.5rem;
+            }
+            .now-playing-info {
+                width: auto;
+            }
+            .now-playing-text {
+                display: none;
+            }
+            .now-playing-extra {
+                display: none;
+            }
+            .history-grid {
+                grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+                gap: 20px;
+            }
+            .list-item-img {
+                width: 50px;
+                height: 50px;
+                margin-right: 14px;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .top-bar {
+                padding: 10px 15px;
+            }
+            .top-bar-center {
+                margin: 0 10px;
+            }
+            .search-box {
+                padding: 10px 20px 10px 45px;
+                font-size: 0.9rem;
+            }
+            .mobile-menu-btn,
+            .theme-toggle,
+            .notification-btn {
+                width: 38px;
+                height: 38px;
+            }
+            .music-card {
+                width: 140px;
+            }
+            .card-img-container {
+                height: 120px;
+            }
+            .section-title,
+            .list-title {
+                font-size: 1.3rem;
+            }
+            .hero-title {
+                font-size: 1.8rem;
+            }
+            .history-grid {
+                grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+                gap: 15px;
+            }
+            .list-item-img {
+                width: 45px;
+                height: 45px;
+                margin-right: 12px;
+            }
+            .list-item-title {
+                font-size: 0.95rem;
+            }
+            .list-item-artist {
+                font-size: 0.8rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Splash Screen -->
+    <div class="splash-screen" id="splashScreen">
+        <div class="splash-content">
+            <div class="splash-logo-wrapper">
+                <div class="splash-icon">
+                    <i class="fas fa-music"></i>
+                </div>
+                <div class="splash-logo-text">Suika Player</div>
+            </div>
+            <div class="splash-loader">
+                <div class="splash-progress"></div>
+            </div>
+            <div class="splash-footer">Nikmati Lagu Hanya Di Suika Player</div>
+        </div>
+    </div>
+
+    <!-- Account Menu -->
+    <div class="account-menu" id="accountMenu">
+        <div class="account-header">
+            <div class="account-avatar">U</div>
+            <div class="account-info">
+                <h3>User</h3>
+                <p>user@email.com</p>
+                <div class="account-status">
+                    <span class="status-dot"></span>
+                    <span>Online</span>
+                </div>
+            </div>
+        </div>
+        
+        <ul class="account-menu-list">
+            <li class="account-menu-item" id="profileBtn">
+                <i class="fas fa-user"></i>
+                <span>Profil Saya</span>
+            </li>
+            <li class="account-menu-item" id="settingsBtn">
+                <i class="fas fa-cog"></i>
+                <span>Pengaturan</span>
+            </li>
+            <li class="account-menu-item badge" id="premiumBtn">
+                <i class="fas fa-crown"></i>
+                <span>Suika Premium</span>
+                <span class="account-badge">PRO</span>
+            </li>
+            <li class="account-menu-item" id="playlistsBtn">
+                <i class="fas fa-music"></i>
+                <span>Daftar Putar Saya</span>
+            </li>
+            <li class="account-menu-item" id="downloadsBtn">
+                <i class="fas fa-download"></i>
+                <span>Download Saya</span>
+            </li>
+            <li class="account-menu-item" id="statsBtn">
+                <i class="fas fa-chart-line"></i>
+                <span>Statistik</span>
+            </li>
+        </ul>
+        
+        <div class="account-footer">
+            <div class="account-stats">
+                <div class="stat-item">
+                    <div class="stat-value">128</div>
+                    <div class="stat-label">Lagu</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value">5</div>
+                    <div class="stat-label">Playlist</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value">42h</div>
+                    <div class="stat-label">Dengar</div>
+                </div>
+            </div>
+            <button class="logout-btn" id="logoutBtn">
+                <i class="fas fa-sign-out-alt"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- Fullscreen Player -->
+    <div class="fullscreen-player" id="fullscreenPlayer">
+        <button class="close-fullscreen" id="closeFullscreen">
+            <i class="fas fa-times"></i>
+        </button>
+        
+        <div class="fullscreen-content">
+            <img src="" alt="Album Art" class="fullscreen-album-art" id="fullscreenAlbumArt">
+            
+            <div class="fullscreen-song-info">
+                <h1 class="fullscreen-song-title" id="fullscreenSongTitle">Lagu</h1>
+                <p class="fullscreen-song-artist" id="fullscreenSongArtist">Artis</p>
+                <p class="fullscreen-song-album" id="fullscreenSongAlbum">Album</p>
+            </div>
+            
+            <div class="fullscreen-controls">
+                <div class="fullscreen-progress-container">
+                    <div class="fullscreen-progress-bar" id="fullscreenProgressBar">
+                        <div class="fullscreen-progress" id="fullscreenProgress"></div>
+                    </div>
+                    <div class="fullscreen-time-info">
+                        <span id="fullscreenCurrentTime">0:00</span>
+                        <span id="fullscreenDuration">0:00</span>
+                    </div>
+                </div>
+                
+                <div class="fullscreen-buttons">
+                    <button class="fullscreen-control-btn" id="fullscreenShuffleBtn">
+                        <i class="fas fa-random"></i>
+                    </button>
+                    <button class="fullscreen-control-btn" id="fullscreenPrevBtn">
+                        <i class="fas fa-step-backward"></i>
+                    </button>
+                    <button class="fullscreen-control-btn fullscreen-play-btn" id="fullscreenPlayBtn">
+                        <i class="fas fa-play" id="fullscreenPlayIcon"></i>
+                    </button>
+                    <button class="fullscreen-control-btn" id="fullscreenNextBtn">
+                        <i class="fas fa-step-forward"></i>
+                    </button>
+                    <button class="fullscreen-control-btn" id="fullscreenRepeatBtn">
+                        <i class="fas fa-redo"></i>
+                    </button>
+                </div>
+                
+                <div class="fullscreen-extra-controls">
+                    <div class="fullscreen-volume-container">
+                        <i class="fas fa-volume-up"></i>
+                        <div class="fullscreen-volume-slider" id="fullscreenVolumeSlider">
+                            <div class="fullscreen-volume-progress" id="fullscreenVolumeProgress"></div>
+                        </div>
+                    </div>
+                    
+                    <button class="fullscreen-queue-btn" id="fullscreenQueueBtn">
+                        <i class="fas fa-list-ul"></i> Lihat Antrian
+                    </button>
+                    
+                    <button class="fullscreen-queue-btn" id="lyricsBtn">
+                        <i class="fas fa-microphone-alt"></i> Lirik
+                    </button>
+                </div>
+            </div>
+            
+            <div class="lyrics-container" id="lyricsContainer">
+                <div class="lyrics-header">
+                    <h3 class="lyrics-title">Lirik Lagu</h3>
+                    <button class="close-lyrics" id="closeLyrics">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="lyrics-content" id="lyricsContent">
+                    Lirik tidak tersedia untuk lagu ini.
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- App Container -->
+    <div class="app-container" id="appContainer">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="logo">
+                <div class="logo-icon">
+                    <i class="fas fa-music"></i>
+                </div>
+                <div class="logo-text">Suika Player</div>
+            </div>
+            
+            <div class="nav-section">
+                <h3 class="nav-title">Menu Utama</h3>
+                <ul class="nav-links">
+                    <li><a href="#" class="active" data-page="home"><i class="fas fa-home"></i> Beranda</a></li>
+                    <li><a href="#" data-page="discover"><i class="fas fa-compass"></i> Telusuri</a></li>
+                    <li><a href="#" data-page="radio"><i class="fas fa-broadcast-tower"></i> Radio</a></li>
+                    <li><a href="#" data-page="library"><i class="fas fa-heart"></i> Favorit Anda</a></li>
+                    <li><a href="#" data-page="history"><i class="fas fa-history"></i> Riwayat</a></li>
+                </ul>
+            </div>
+            
+            <div class="nav-section">
+                <h3 class="nav-title">Kategori</h3>
+                <ul class="nav-links">
+                    <li><a href="#" data-category="all"><i class="fas fa-music"></i> Semua Musik</a></li>
+                    <li><a href="#" data-category="pop"><i class="fas fa-guitar"></i> Pop</a></li>
+                    <li><a href="#" data-category="rock"><i class="fas fa-drum"></i> Rock</a></li>
+                    <li><a href="#" data-category="hiphop"><i class="fas fa-microphone-alt"></i> Hip Hop</a></li>
+                    <li><a href="#" data-category="electronic"><i class="fas fa-synth"></i> Electronic</a></li>
+                    <li><a href="#" data-category="jazz"><i class="fas fa-saxophone"></i> Jazz</a></li>
+                    <li><a href="#" data-category="sad"><i class="fas fa-sad-tear"></i> Sad / Sedih</a></li>
+                </ul>
+            </div>
+            
+            <div class="nav-section playlist-section">
+                <h3 class="nav-title">Daftar Putar Anda</h3>
+                <div class="playlist-item" id="currentPlaylist">
+                    <img src="https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80" class="playlist-img">
+                    <div class="playlist-info">
+                        <h4>Favorit Hari Ini</h4>
+                        <p>12 lagu • 45 menit</p>
+                    </div>
+                </div>
+                <div class="playlist-item">
+                    <img src="https://images.unsplash.com/photo-1470225620780-dba8ba36b745?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80" class="playlist-img">
+                    <div class="playlist-info">
+                        <h4>Chill Vibes</h4>
+                        <p>18 lagu • 60 menit</p>
+                    </div>
+                </div>
+                <div class="playlist-item">
+                    <img src="https://images.unsplash.com/photo-1511379938547-c1f69419868d?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80" class="playlist-img">
+                    <div class="playlist-info">
+                        <h4>Workout Mix</h4>
+                        <p>15 lagu • 55 menit</p>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- ========== TOP BAR - FIXED PROFESIONAL ========== -->
+            <div class="top-bar">
+                <!-- Left Section - Mobile Menu Button -->
+                <div class="top-bar-left">
+                    <button class="mobile-menu-btn" id="mobileMenuBtn">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                </div>
+                
+                <!-- Center Section - Search Bar -->
+                <div class="top-bar-center">
+                    <div class="search-container">
+                        <i class="fas fa-search search-icon"></i>
+                        <input type="text" class="search-box" id="searchBox" placeholder="Cari lagu, artis, atau album...">
+                        <button class="clear-search" id="clearSearch">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Right Section - User Actions -->
+                <div class="top-bar-right">
+                    <button class="theme-toggle" id="themeToggle">
+                        <i class="fas fa-moon"></i>
+                    </button>
+                    <button class="notification-btn" id="notificationBtn">
+                        <i class="fas fa-bell"></i>
+                    </button>
+                    <div class="user-profile" id="userProfile">
+                        <div class="user-avatar">U</div>
+                        <span class="user-name">User</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Content Area -->
+            <div class="content-area">
+                <!-- Beranda (Default) -->
+                <div id="homeSection" class="page-section">
+                    <!-- Hero Banner -->
+                    <div class="hero-banner" id="heroBanner">
+                        <div class="hero-content">
+                            <h1 class="hero-title">Musik Tanpa Batas</h1>
+                            <p class="hero-subtitle">Jelajahi jutaan lagu, buat daftar putar personal, dan dengarkan musik favorit Anda di mana saja.</p>
+                            <button class="hero-btn" id="exploreBtn">
+                                <i class="fas fa-play"></i> Mulai Mendengarkan
+                            </button>
+                        </div>
+                        <img src="https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80" class="hero-image" id="heroImage">
+                    </div>
+
+                    <!-- Recently Played - CAROUSEL -->
+                    <div class="carousel-section">
+                        <div class="section-header">
+                            <h2 class="section-title">Baru Saja Diputar</h2>
+                            <a href="#" class="view-all" id="viewAllRecent">Lihat Semua <i class="fas fa-chevron-right"></i></a>
+                        </div>
+                        <div class="carousel-container">
+                            <div class="carousel-track" id="recentCarousel"></div>
+                        </div>
+                    </div>
+
+                    <!-- Popular Now - CAROUSEL -->
+                    <div class="carousel-section">
+                        <div class="section-header">
+                            <h2 class="section-title">Populer Saat Ini</h2>
+                            <a href="#" class="view-all" id="viewAllPopular">Lihat Semua <i class="fas fa-chevron-right"></i></a>
+                        </div>
+                        <div class="carousel-container">
+                            <div class="carousel-track" id="popularCarousel"></div>
+                        </div>
+                    </div>
+
+                    <!-- Recommended For You - CAROUSEL -->
+                    <div class="carousel-section">
+                        <div class="section-header">
+                            <h2 class="section-title">Rekomendasi Untuk Anda</h2>
+                            <a href="#" class="view-all" id="viewAllRecommended">Lihat Semua <i class="fas fa-chevron-right"></i></a>
+                        </div>
+                        <div class="carousel-container">
+                            <div class="carousel-track" id="recommendedCarousel"></div>
+                        </div>
+                    </div>
+
+                    <!-- ========== VERTICAL LIST SECTION - MULAI MENDENGARKAN ========== -->
+                    <div class="vertical-list-section">
+                        <div class="list-header">
+                            <h2 class="list-title">Mulai Mendengarkan</h2>
+                            <a href="#" class="list-view-all" id="viewAllStartListening">Lihat Semua <i class="fas fa-chevron-right"></i></a>
+                        </div>
+                        
+                        <div class="song-list-container" id="startListeningList">
+                            <!-- Akan diisi oleh JavaScript dengan lagu acak -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Hasil Pencarian - CAROUSEL -->
+                <div id="searchResultsSection" class="search-results-section">
+                    <div class="section-header">
+                        <h2 class="section-title">Hasil Pencarian</h2>
+                    </div>
+                    <p class="results-info" id="resultsInfo">Menampilkan hasil untuk "<strong id="searchQuery"></strong>"</p>
+                    <div class="search-results-carousel" id="searchResultsCarousel"></div>
+                </div>
+
+                <!-- Halaman Riwayat - GRID VERTIKAL -->
+                <div id="historySection" class="history-section">
+                    <div class="section-header">
+                        <h2 class="section-title">Riwayat Dengarkan</h2>
+                    </div>
+                    
+                    <div class="history-actions">
+                        <button class="history-btn active" data-history-type="all">Semua</button>
+                        <button class="history-btn" data-history-type="today">Hari Ini</button>
+                        <button class="history-btn" data-history-type="week">Minggu Ini</button>
+                        <button class="history-btn" data-history-type="month">Bulan Ini</button>
+                        <button class="history-btn" id="clearHistoryBtn"><i class="fas fa-trash"></i> Hapus Riwayat</button>
+                    </div>
+                    
+                    <div id="historyContent" class="history-grid"></div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Queue Sidebar -->
+        <aside class="queue-sidebar" id="queueSidebar">
+            <div class="queue-header">
+                <h3 class="queue-title">Antrian Putar</h3>
+                <button class="close-queue" id="closeQueue">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <ul class="queue-list" id="queueList"></ul>
+        </aside>
+
+        <!-- Now Playing Bar -->
+        <div class="now-playing-bar">
+            <div class="now-playing-info">
+                <img src="https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80" class="now-playing-img" id="nowPlayingImg">
+                <div class="now-playing-text">
+                    <h4 id="nowPlayingTitle">Blinding Lights</h4>
+                    <p id="nowPlayingArtist">The Weeknd</p>
+                </div>
+            </div>
+            
+            <div class="now-playing-controls">
+                <div class="control-buttons">
+                    <button class="control-btn" id="shuffleBtn">
+                        <i class="fas fa-random"></i>
+                    </button>
+                    <button class="control-btn" id="prevBtn">
+                        <i class="fas fa-step-backward"></i>
+                    </button>
+                    <button class="control-btn play-pause-btn" id="playPauseBtn">
+                        <i class="fas fa-play" id="playPauseIcon"></i>
+                    </button>
+                    <button class="control-btn" id="nextBtn">
+                        <i class="fas fa-step-forward"></i>
+                    </button>
+                    <button class="control-btn" id="repeatBtn">
+                        <i class="fas fa-redo"></i>
+                    </button>
+                </div>
+                
+                <div class="progress-container">
+                    <span class="time" id="currentTime">0:00</span>
+                    <div class="progress-bar" id="progressBar">
+                        <div class="progress" id="progress"></div>
+                    </div>
+                    <span class="time" id="duration">0:00</span>
+                </div>
+            </div>
+            
+            <div class="now-playing-extra">
+                <div class="volume-container">
+                    <i class="fas fa-volume-up"></i>
+                    <div class="volume-slider" id="volumeSlider">
+                        <div class="volume-progress" id="volumeProgress"></div>
+                    </div>
+                </div>
+                <button class="control-btn" id="queueBtn">
+                    <i class="fas fa-list-ul"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ========== MUSIC LIBRARY ==========
+        const musicLibrary = [
+{
+                id: 1,
+                title: "Pyphone Marone",
+                artist: "Wiz Khalifa",
+                album: "Lagu Galau Atau Sad",
+                src: "https://raw.githubusercontent.com/SuikaRyp/Database/main/audio/1767964826794_Maroon_5_Payphone_ft_Wiz_Khalifa_Explicit_Official_Music_V.mp3",
+                img: "https://raw.githubusercontent.com/SuikaRyp/Database/main/images/1767964825961_image_1767964825961.jpg",
+                duration: "4:39",
+                category: "pop",
+                popular: true,
+                lyrics: "Memori terindah bersamamu\nTakkan pernah kulupakan\nSetiap detik setiap waktu\nKau selalu di hatiku\n\nReff:\nCinta kita takkan pernah pudar\nMeski waktu terus berjalan\nKau dan aku selamanya\nDalam cerita cinta kita"
+            },
+            {
+                id: 2,
+                title: "Serana",
+                artist: "For Revange",
+                album: "Lagu Galau Atau Sad",
+                src: "https://raw.githubusercontent.com/SuikaRyp/Database/main/audio/1767964874972_For_Revenge_-_Serana__Lyrics_.mp3",
+                img: "https://raw.githubusercontent.com/SuikaRyp/Database/main/images/1767964873546_image_1767964873546.jpg",
+                duration: "4:11",
+                category: "pop",
+                popular: true,
+                lyrics: "Dulu kau bilang cinta abadi\nKini semua hanya kenangan\nAir mata mengalir sendiri\nMengingat semua janji manismu"
+            },
+            {
+                id: 3,
+                title: "Seperti Bintang",
+                artist: "Ungu",
+                album: "Lagu Galau Atau Sad",
+                src: "https://raw.githubusercontent.com/SuikaRyp/Database/main/audio/1767964761629_Seperti_Bintang_-_Ungu.mp3",
+                img: "https://raw.githubusercontent.com/SuikaRyp/Database/main/images/1767964760668_image_1767964760668.jpg",
+                duration: "3:14",
+                category: "pop",
+                popular: true,
+                lyrics: "Kau bagaikan bintang di malam hari\nMenerangi jalan hidupku\nDenganmu semua terasa berarti\nTanpamu dunia terasa hampa"
+            },
+            {
+                id: 4,
+                title: "Karna Kamu",
+                artist: "Geisha",
+                album: "Lagu Galau Atau Sad",
+                src: "https://raw.githubusercontent.com/SuikaRyp/Database/main/audio/1767964714765_aGSggATnKp0.mp3",
+                img: "https://raw.githubusercontent.com/SuikaRyp/Database/main/images/1767964713810_image_1767964713810.jpg",
+                duration: "3:55",
+                category: "sad",
+                popular: false,
+                lyrics: "Karena kamu aku bisa bertahan\nKarena kamu aku tetap berdiri\nMeski badai menghantam kehidupan\nKau selalu ada untukku"
+            },
+            {
+                id: 5,
+                title: "Dj Mojang Priangan",
+                artist: "Nining Meida",
+                album: "Lagu Dj Lagu Galau",
+                src: "https://raw.githubusercontent.com/SuikaRyp/Database/main/audio/1767964650391_killua_1762225827726_765k0k2z4p5.mp3",
+                img: "https://raw.githubusercontent.com/SuikaRyp/Database/main/images/1767964649722_image_1767964649722.jpg",
+                duration: "4:20",
+                category: "pop",
+                popular: true,
+                lyrics: "Mojang priangan cantik jelita\nSenandung cinta di udara\nMenari di bawah sinar rembulan\nMembawa cerita indah bersama"
+            },
+            {
+                id: 6,
+                title: "Kasih Aba Aba",
+                artist: "Tenxi",
+                album: "Lagu Indo",
+                src: "https://raw.githubusercontent.com/SuikaRyp/Database/main/audio/1767964577425_Naykilla__Tenxi___Jemsii_-_Kasih_Aba-Aba__8D_AUDIO_.mp3",
+                img: "https://raw.githubusercontent.com/SuikaRyp/Database/main/images/1767964537376_image_1767964537376.jpg",
+                duration: "2:58",
+                category: "pop",
+                popular: false,
+                lyrics: "Kasih aba-aba cintamu padaku\nMembuat hati ini berdebar kencang\nSetiap langkah setiap kata\nPenuh makna dalam hidupku"
+            },
+            {
+                id: 7,
+                title: "Bersamamu",
+                artist: "Viera",
+                album: "Lagu Galau Atau Sad",
+                src: "https://raw.githubusercontent.com/SuikaRyp/Database/main/audio/1767964425937_Vierra_-_Bersamamu__Official_Music_Video_.mp3",
+                img: "https://raw.githubusercontent.com/SuikaRyp/Database/main/images/1767964424986_image_1767964424986.jpg",
+                duration: "3:48",
+                category: "sad",
+                popular: true,
+                lyrics: "Bersamamu waktu terasa cepat\nBersamamu semua masalah hilang\nDalam pelukan hangatmu\nAku menemukan kedamaian"
+            },
+            {
+                id: 8,
+                title: "Monitor Ketua",
+                artist: "THENDO CHASTILO",
+                album: "Lagu Dj",
+                src: "https://raw.githubusercontent.com/SuikaRyp/Abonimau/main/audio/1770344467776_JEDAG_JEDUG_SOUND_Topic_Tor_Monitor_Ketua_DJ_Kopra_Fvnky.mp3",
+                img: "https://raw.githubusercontent.com/SuikaRyp/Database/main/images/1767964418474_image_1767964418474.jpg",
+                duration: "4:40",
+                category: "hiphop",
+                popular: true,
+                lyrics: "Monitor kehidupan terus berjalan\nKetua hati mengatur segalanya\nDalam alunan musik hiphop\nKita ungkapkan semua isi hati"
+            },
+            {
+                id: 9,
+                title: "Battle Cry",
+                artist: "Jim Yosuf",
+                album: "Lagu Dj Lagu Galau",
+                src: "https://raw.githubusercontent.com/SuikaRyp/Database/main/audio/1767964362415_Jim_Yosef_-_BATTLECRY__Heart_of_Courage_.mp3",
+                img: "https://raw.githubusercontent.com/SuikaRyp/Database/main/images/1767964361787_image_1767964361787.jpg",
+                duration: "2:31",
+                category: "pop",
+                popular: false,
+                lyrics: "Ini adalah teriakan perangku\nUntuk melawan semua rintangan\nDengan semangat dan tekad\nAku akan terus maju"
+            },
+            {
+                id: 10,
+                title: "Luka Negara",
+                artist: "Fujita Haruka",
+                album: "Lagu Galau Atau Sad",
+                src: "https://raw.githubusercontent.com/SuikaRyp/Database/main/audio/1767964298435_0g3xcm.mp3",
+                img: "https://raw.githubusercontent.com/SuikaRyp/Database/main/images/1767964296558_image_1767964296558.jpg",
+                duration: "4:23",
+                category: "pop",
+                popular: true,
+                lyrics: "Luka negara takkan pernah sembuh\nJika kita tak belajar dari sejarah\nDalam setiap tetes air mata\nTerdapat pelajaran berharga"
+            },
+            {
+                id: 11,
+                title: "Terbang Bersamaku",
+                artist: "Kangen Band",
+                album: "Kangen Band",
+                src: "https://raw.githubusercontent.com/SuikaRyp/Database/main/audio/1767964226050_Terbang_Bersamaku_-_Kangen_Band__Lyrics_.mp3",
+                img: "https://raw.githubusercontent.com/SuikaRyp/Database/main/images/1767964224270_image_1767964224270.jpg",
+                duration: "3:54",
+                category: "pop",
+                popular: false,
+                lyrics: "Terbang bersamaku ke angkasa\nRaih mimpi yang selama ini kau impikan\nDalam pelukan angin malam\nKita menari di antara bintang"
+            },
+            {
+                id: 12,
+                title: "Jakarta Hari Ini",
+                artist: "For Revange",
+                album: "Lagu Galau Atau Sad",
+                src: "https://raw.githubusercontent.com/SuikaRyp/Database/main/audio/1767964171599_For_Revenge_X_Stereo_Wall_Jakarta_Hari_Ini_Official_Video.mp3",
+                img: "https://raw.githubusercontent.com/SuikaRyp/Database/main/images/1767964170491_image_1767964170491.jpg",
+                duration: "3:35",
+                category: "sad",
+                popular: false,
+                lyrics: "Jakarta hari ini sunyi senyap\nTanpa hiruk pikuk seperti biasa\nDi tengah kesendirian ini\nAku merindukan kehadiranmu"
+            },
+            {
+                id: 13,
+                title: "Duka",
+                artist: "Last Child",
+                album: "Lagu Galau lagu Sad",
+                src: "https://raw.githubusercontent.com/SuikaRyp/Database/main/audio/1767964110075_Last_Child_-_Duka__Lyrics_.mp3",
+                img: "https://raw.githubusercontent.com/SuikaRyp/Database/main/images/1767964109009_image_1767964109009.jpg",
+                duration: "5:21",
+                category: "sad",
+                popular: true,
+                lyrics: "Duka yang mendalam\nMenyelimuti hati ini\nSetiap kenangan bersamamu\nMenjadi pedih yang tak tertahankan"
+            },
+            {
+                id: 14,
+                title: "Bubrah",
+                artist: "Niken",
+                album: "Lagu Jawa",
+                src: "https://raw.githubusercontent.com/SuikaRyp/Database/main/audio/1767965261884_Northsle_feat._Agiff_-_Bubrah__Official_Music_Video_.mp3",
+                img: "https://raw.githubusercontent.com/SuikaRyp/Database/main/images/1767965261247_image_1767965261247.jpg",
+                duration: "4:19",
+                category: "pop",
+                popular: true,
+                lyrics: "Bubrah hatiku saat kau pergi\nTinggalkan semua kenangan indah\nPecahan cinta berserakan\nTak bisa disatukan lagi"
+            },
+            {
+                id: 15,
+                title: "Pelanggaran",
+                artist: "Denny Caknan",
+                album: "Lagu Jawa",
+                src: "https://raw.githubusercontent.com/SuikaRyp/Database/main/audio/1767965282996_DENNY_CAKNAN_-_PELANGGARAN__OFFICIAL_LIVE_MUSIC_.mp3",
+                img: "https://raw.githubusercontent.com/SuikaRyp/Database/main/images/1767965260712_image_1767965260712.jpg",
+                duration: "5:24",
+                category: "pop",
+                popular: false,
+                lyrics: "Pelanggaran cinta yang kita lakukan\nMembawa kita pada penderitaan\nJanji setia yang terabaikan\nHanya menyisakan luka"
+            },
+            {
+                id: 16,
+                title: "Tresno Liyane",
+                artist: "Northsle",
+                album: "Lagu Jawa",
+                src: "https://raw.githubusercontent.com/SuikaRyp/Database/main/audio/1767965219469_Tresno_liyane_NorthSle_Lirik_lagupengarepku_kowe_oleh_pengga.mp3",
+                img: "https://raw.githubusercontent.com/SuikaRyp/Database/main/images/1767965218947_image_1767965218947.jpg",
+                duration: "4:39",
+                category: "pop",
+                popular: true,
+                lyrics: "Tresno liyane sing tak rasakno\nNanging kowe malah ninggalno\nAti iki remuk redam\nAmargo tresno sing tak jaluk"
+            },
+            {
+                id: 17,
+                title: "Korban Janji",
+                artist: "Guyon Weton",
+                album: "Lagu Jawa",
+                src: "https://raw.githubusercontent.com/SuikaRyp/Database/main/audio/1767965153441_GuyonWaton_Official_-_Korban_Janji__Official_Music_Video_.mp3",
+                img: "https://raw.githubusercontent.com/SuikaRyp/Database/main/images/1767965152229_image_1767965152229.jpg",
+                duration: "3:35",
+                category: "pop",
+                popular: false,
+                lyrics: "Aku korban janji manismu\nYang tak pernah kau tepati\nAir mata mengalir deras\nMengingat semua kebohonganmu"
+            },
+            {
+                id: 18,
+                title: "Kembali Bertahan",
+                artist: "Ungu",
+                album: "Lagu Jawa",
+                src: "https://raw.githubusercontent.com/SuikaRyp/Database/main/audio/1767965377984_Ungu_-__Kembali_Bertahan__OST_Satria_Garuda_Bima_X.mp3",
+                img: "https://raw.githubusercontent.com/SuikaRyp/Database/main/images/1767965376891_image_1767965376891.jpg",
+                duration: "4:15",
+                category: "pop",
+                popular: true,
+                lyrics: "Aku harus kembali bertahan\nMeski hati ini terluka\nDemi masa depan yang lebih baik\nAku akan bangkit lagi"
+            },
+            {
+                id: 19,
+                title: "Kisah Cinta Untuk Starla",
+                artist: "Virgun",
+                album: "Lagu Jawa",
+                src: "https://raw.githubusercontent.com/SuikaRyp/Database/main/audio/1767965455407_FocFked1TbQ.mp3",
+                img: "https://raw.githubusercontent.com/SuikaRyp/Database/main/images/1767965440419_image_1767965440419.jpg",
+                duration: "4:33",
+                category: "pop",
+                popular: true,
+                lyrics: "Kisah cinta untuk Starla\nYang selalu ada di hati\nDalam setiap helaan nafas\nKau selalu kuingat"
+            },
+            {
+                id: 20,
+                title: "Be The One",
+                artist: "Tetsuya Dan Asakura",
+                album: "Lagu Kamenrider",
+                src: "https://raw.githubusercontent.com/SuikaRyp/Database/main/audio/1767965492439_Be_The_One.mp3",
+                img: "https://raw.githubusercontent.com/SuikaRyp/Database/main/images/1767965491593_image_1767965491593.jpg",
+                duration: "3:58",
+                category: "pop",
+                popular: false,
+                lyrics: "Be the one for me\nYou're everything I need\nIn this crazy world\nYou're my peace of mind"
+            },
+            {
+                id: 21,
+                title: "Kelingan Mantan",
+                artist: "N.D.X AKA",
+                album: "Lagu Galau lagu Sad",
+                src: "https://raw.githubusercontent.com/SuikaRyp/Database/main/audio/1767965080214_EMOST_ART_-_NDX_A_K_A_Kelingan_Mantan.mp3",
+                img: "https://raw.githubusercontent.com/SuikaRyp/Database/main/images/1767965078851_image_1767965078851.jpg",
+                duration: "4:45",
+                category: "sad",
+                popular: true,
+                lyrics: "Kelingan mantan sing wis lungo\nNanging ati isih kelingan\nKenangan indah wektu biyen\nDadi pedhanging ati saiki"
+            },
+            {
+                id: 22,
+                title: "Sency",
+                artist: "Tenxi",
+                album: "Lagu Indo",
+                src: "https://raw.githubusercontent.com/SuikaRyp/Database/main/audio/1767965833026_dia_-_SENCY_ft._TENXI__Lyric_Video_.mp3",
+                img: "https://images.unsplash.com/photo-1498038432885-c6f3f1b912ee?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80",
+                duration: "2:33",
+                category: "pop",
+                popular: false,
+                lyrics: "Sency feelings in my heart\nWhen I think about you\nEvery moment every day\nI just want to be with you"
+            },
+            {
+                id: 23,
+                title: "Despacito",
+                artist: "Louis Fonsi",
+                album: "Lagu Penyemangat",
+                src: "https://raw.githubusercontent.com/SuikaRyp/Database/main/audio/1767961816203_Luis_Fonsi_-_Despacito_ft._Daddy_Yankee.mp3",
+                img: "https://raw.githubusercontent.com/SuikaRyp/Database/main/images/1767961831544_image_1767961831544.jpg",
+                duration: "4:42",
+                category: "pop",
+                popular: true,
+                lyrics: "Despacito\nQuiero respirar tu cuello despacito\nDeja que te diga cosas al oído\nPara que te acuerdes si no estás conmigo"
+            },
+            {
+                id: 24,
+                title: "est c que tu meimes",
+                artist: "Gims",
+                album: "Is",
+                src: "https://raw.githubusercontent.com/SuikaRyp/Database/main/audio/1767963395844_Ma_tre_Gims_-_Est-ce_que_tu_m_aimes____Clip_officiel_.mp3",
+                img: "https://raw.githubusercontent.com/SuikaRyp/Database/main/images/1767963395167_image_1767963395167.jpg",
+                duration: "4:02",
+                category: "sad",
+                popular: false,
+                lyrics: "Say something, I'm giving up on you\nI'll be the one, if you want me to\nAnywhere, I would've followed you\nSay something, I'm giving up on you"
+            },
+            {
+                id: 25,
+                title: "Bintang Lima",
+                artist: "Tenxi",
+                album: "Lagu Dj Lagu Indo",
+                src: "https://raw.githubusercontent.com/SuikaRyp/Database/main/audio/1767963462551_Tenxi___Jemsii_-_Bintang_5__Official_Music_Video_Lyric_.mp3",
+                img: "https://raw.githubusercontent.com/SuikaRyp/Database/main/images/1767963461784_image_1767963461784.jpg",
+                duration: "4:04",
+                category: "pop",
+                popular: true,
+                lyrics: "Bintang lima di langit malam\nMenerangi jalan hidupku\nKau bagaikan bintang itu\nSelalu bersinar dalam hidupku"
+            },
+            {
+                id: 26,
+                title: "Doa (Eiyu)",
+                artist: "Kairen",
+                album: "Lagu Ultraman Nexus",
+                src: "https://raw.githubusercontent.com/SuikaRyp/Database/main/audio/1767963512796_ADFX0225_-_Ultraman_Nexus_opening__Doa-Eiyuu_.mp3",
+                img: "https://raw.githubusercontent.com/SuikaRyp/Database/main/images/1767963512350_image_1767963512350.jpg",
+                duration: "3:22",
+                category: "sad",
+                popular: true
+            },
+            {
+                id: 27,
+                title: "Aoi Kajitsu",
+                artist: "Shini Chiri Ohta",
+                album: "Lagu Ultraman Nexus",
+                src: "https://raw.githubusercontent.com/SuikaRyp/Database/main/audio/1767963556395_Ultra_Lyrics_Aoi_Kajitsu_Ultraman_Nexus_Junis_Blue_Opening_L.mp3",
+                img: "https://raw.githubusercontent.com/SuikaRyp/Database/main/images/1767963555296_image_1767963555296.jpg",
+                duration: "3:30",
+                category: "sad",
+                popular: true
+            },
+            {
+                id: 28,
+                title: "Orb Ni Nori",
+                artist: "Ultra Lyric",
+                album: "Lagu Ultraman",
+                src: "https://raw.githubusercontent.com/SuikaRyp/Database/main/audio/1767963646799_Ultra_Lyrics_-_Orb_No_Inori__Ultraman_Orb_Opening__Lyrics.mp3",
+                img: "https://raw.githubusercontent.com/SuikaRyp/Database/main/images/1767963618506_image_1767963618506.jpg",
+                duration: "5:19",
+                category: "sad",
+                popular: false
+            },
+            {
+                id: 29,
+                title: "Susume (Ultra Zero)",
+                artist: "Ultra Lyric",
+                album: "I Do Not Want What I Haven't Got",
+                src: "https://raw.githubusercontent.com/SuikaRyp/Database/main/audio/1767963772165_Ultraman_Zero_Opening_FULL_Susume__Ultraman_Zero_by_Voyager.mp3",
+                img: "https://raw.githubusercontent.com/SuikaRyp/Database/main/images/1767963771211_image_1767963771211.jpg",
+                duration: "4:30",
+                category: "pop",
+                popular: true
+            },
+            {
+                id: 30,
+                title: "Take Me Higher",
+                artist: "Ultra Lyric",
+                album: "Lagu Ultraman",
+                src: "https://raw.githubusercontent.com/SuikaRyp/Database/main/audio/1768009331189_RedPowerV_1962_House_of_Randomness_Ultraman_Tiga_Theme_Song_.mp3",
+                img: "https://raw.githubusercontent.com/SuikaRyp/Database/main/images/1768009263968_image_1768009263968.jpg",
+                duration: "5:09",
+                category: "sad",
+                popular: false
+            },
+            {
+                id: 31,
+                title: "Unite (Ending Ultraman X)",
+                artist: "Ultra Lyric",
+                album: "Lagu Ultraman",
+                src: "https://raw.githubusercontent.com/SuikaRyp/Database/main/audio/1767963983413___MAD___Ultraman_X_The_Movie_-_Unite______.mp3",
+                img: "https://raw.githubusercontent.com/SuikaRyp/Database/main/images/1767963982564_image_1767963982564.jpg",
+                duration: "3:51",
+                category: "pop",
+                popular: true
+            },
+            {
+                id: 32,
+                title: "Multo",
+                artist: "Cup Of Joe",
+                album: "Lagu Galau lagu Sad",
+                src: "https://raw.githubusercontent.com/SuikaRyp/Database/main/audio/1767966522635_Multo__Live_at_The_Cozy_Cove__-_Cup_of_Joe.mp3",
+                img: "https://raw.githubusercontent.com/SuikaRyp/Database/main/images/1767966679328_image_1767966679328.jpg",
+                duration: "4:05",
+                category: "sad",
+                popular: true
+            },
+            {
+                id: 33,
+                title: "Beggin",
+                artist: "Madcon",
+                album: "Lagu Dj Lagu Inggris",
+                src: "https://raw.githubusercontent.com/SuikaRyp/Database/main/audio/1767961557980_Testo_.mp3",
+                img: "https://raw.githubusercontent.com/SuikaRyp/Database/main/images/1767961740859_image_1767961740859.jpg",
+                duration: "3:31",
+                category: "sad",
+                popular: false
+            },
+            {
+                id: 34,
+                title: "Masih Disini",
+                artist: "Monsta",
+                album: "Lagu Penyemangat Lagu",
+                src: "https://raw.githubusercontent.com/SuikaRyp/Database/main/audio/1767963903363_Bunkface_-_Masih_Di_Sini__BoBoiBoy_The_Movie_OST_.mp3",
+                img: "https://raw.githubusercontent.com/SuikaRyp/Database/main/images/1767963902275_image_1767963902275.jpg",
+                duration: "4:14",
+                category: "sad",
+                popular: true
+            },
+{
+    id: 35,
+    title: "She Will Be Loved",
+    artist: "Marone 5",
+    album: "Lagu Galau lagu Sad",
+    src: "https://raw.githubusercontent.com/SuikaRyp/Loriyagami/main/audio/1768305914734_Maroon_5_-_She_Will_Be_Loved__Official_Music_Video_.mp3",
+    img: "https://raw.githubusercontent.com/SuikaRyp/Loriyagami/main/images/1768305962986_image_1768305962986.jpg",
+    duration: "3:58",
+    category: "sad",
+    popular: false
+},
+{
+    id: 36,
+    title: "Scott Street",
+    artist: "Phoebe Bridgers",
+    album: "Lagu Galau lagu Sad",
+    src: "https://raw.githubusercontent.com/SuikaRyp/Database/main/audio/1767967673363_Phoebe_Bridgers_-_Scott_Street__Official_Video_.mp3",
+    img: "https://raw.githubusercontent.com/SuikaRyp/Database/main/images/1767967659071_image_1767967659071.jpg",
+    duration: "5:05",
+    category: "sad",
+    popular: true
+},
+{
+    id: 37,
+    title: "The Night We Met",
+    artist: "Lord Huron",
+    album: "Lagu Galau lagu Sad",
+    src: "https://raw.githubusercontent.com/SuikaRyp/Database/main/audio/1767967768575_Lord_Huron_-_The_Night_We_Met__Official_Audio_.mp3",
+    img: "https://raw.githubusercontent.com/SuikaRyp/Database/main/images/1767967753821_image_1767967753821.jpg",
+    duration: "3:28",
+    category: "sad",
+    popular: true
+},
+{
+    id: 38,
+    title: "lost myself 4 u",
+    artist: "Thomas Day",
+    album: "Lagu Galau lagu Sad",
+    src: "https://raw.githubusercontent.com/SuikaRyp/Database/main/audio/1767967807599_Thomas_Day_-_lost_myself_4_u__Official_Video_.mp3",
+    img: "https://raw.githubusercontent.com/SuikaRyp/Database/main/images/1767967833458_image_1767967833458.jpg",
+    duration: "3:53",
+    category: "sad",
+    popular: true
+},
+{
+    id: 39,
+    title: "About You",
+    artist: "The 1975",
+    album: "Lagu Galau lagu Sad",
+    src: "https://raw.githubusercontent.com/SuikaRyp/Database/main/audio/1767967938755_The_1975_-_youtube_video__tGv7CUutzqU.mp3",
+    img: "https://raw.githubusercontent.com/SuikaRyp/Database/main/images/1767967943339_image_1767967943339.jpg",
+    duration: "5:27",
+    category: "sad",
+    popular: true
+},
+{
+    id: 40,
+    title: "When I Was Your Man",
+    artist: "Bruno Mars",
+    album: "Lagu Galau lagu Sad",
+    src: "https://raw.githubusercontent.com/SuikaRyp/Database/main/audio/1767968035817_Bruno_Mars_-_When_I_Was_Your_Man.mp3",
+    img: "https://raw.githubusercontent.com/SuikaRyp/Database/main/images/1767968064982_image_1767968064982.jpg",
+    duration: "3:34",
+    category: "sad",
+    popular: true
+},
+{
+    id: 41,
+    title: "A Sorrowful Reunion",
+    artist: "Reality Club",
+    album: "Lagu Galau lagu Sad",
+    src: "https://raw.githubusercontent.com/SuikaRyp/Database/main/audio/1767968156470_A_Sorrowful_Reunion_-_Reality_Club__Official_Lyric_Video_.mp3",
+    img: "https://raw.githubusercontent.com/SuikaRyp/Database/main/images/1767968131606_image_1767968131606.jpg",
+    duration: "4:25",
+    category: "sad",
+    popular: false
+},
+{
+    id: 42,
+    title: "The Scientist",
+    artist: "Coldplay",
+    album: "Lagu Galau lagu Sad",
+    src: "https://raw.githubusercontent.com/SuikaRyp/Database/main/audio/1767968249555_RB-RcX5DS5A.mp3",
+    img: "https://raw.githubusercontent.com/SuikaRyp/Database/main/images/1767968277688_image_1767968277688.jpg",
+    duration: "4:25",
+    category: "sad",
+    popular: true
+},
+{
+    id: 43,
+    title: "All I Ask",
+    artist: "Adele",
+    album: "Lagu Galau lagu Sad",
+    src: "https://raw.githubusercontent.com/SuikaRyp/Database/main/audio/1768005729941_All_I_Ask_-_Adele__Lyrics_.mp3",
+    img: "https://raw.githubusercontent.com/SuikaRyp/Database/main/images/1768005932771_image_1768005932771.jpg",
+    duration: "4:31",
+    category: "sad",
+    popular: true
+},
+{
+    id: 44,
+    title: "Stay",
+    artist: "Jt5k",
+    album: "Lagu Galau lagu Sad",
+    src: "https://raw.githubusercontent.com/SuikaRyp/Database/main/audio/1768006025408_The_Kid_LAROI__Justin_Bieber_-_STAY__Official_Video_.mp3",
+    img: "https://raw.githubusercontent.com/SuikaRyp/Database/main/images/1768006031871_image_1768006031871.jpg",
+    duration: "2:46",
+    category: "sad",
+    popular: false
+},
+{
+    id: 45,
+    title: "Kimi Dake O Mamoritai",
+    artist: "Asuka",
+    album: "Lagu Ultraman",
+    src: "https://raw.githubusercontent.com/SuikaRyp/Database/main/audio/1768009397745__Kimi_Dake_wo_Mamoritai__Ultraman_Dyna_ending_song_-_lyrics.mp3",
+    img: "https://raw.githubusercontent.com/SuikaRyp/Database/main/images/1768009431975_image_1768009431975.jpg",
+    duration: "3:40",
+    category: "sad",
+    popular: true
+},
+{
+    id: 46,
+    title: "WILDFLOWER",
+    artist: "Billie Eilish",
+    album: "Lagu Galau lagu Sad",
+    src: "https://raw.githubusercontent.com/SuikaRyp/Database/main/audio/1768006158166_Billie_Eilish_-_WILDFLOWER__Karaoke_Version_.mp3",
+    img: "https://raw.githubusercontent.com/SuikaRyp/Database/main/images/1768006213314_image_1768006213314.jpg",
+    duration: "4:21",
+    category: "sad",
+    popular: true
+},
+{
+    id: 47,
+    title: "back to friends",
+    artist: "sombr",
+    album: "Lagu Galau lagu Sad",
+    src: "https://raw.githubusercontent.com/SuikaRyp/Database/main/audio/1768006255576_sombr_-_back_to_friends__official_audio_.mp3",
+    img: "https://raw.githubusercontent.com/SuikaRyp/Database/main/images/1768006264367_image_1768006264367.jpg",
+    duration: "3:08",
+    category: "sad",
+    popular: false
+},
+{
+    id: 48,
+    title: "Let Down",
+    artist: "Radiohead",
+    album: "OK Computer",
+    src: "https://raw.githubusercontent.com/SuikaRyp/Database/main/audio/1768006303407_Radiohead_-_Let_Down__Remastered_.mp3",
+    img: "https://raw.githubusercontent.com/SuikaRyp/Database/main/images/1768006331067_image_1768006331067.jpg",
+    duration: "4:59",
+    category: "sad",
+    popular: true
+},
+{
+    id: 49,
+    title: "Fake Plastic Trees",
+    artist: "Radiohead",
+    album: "The Bends",
+    src: "https://raw.githubusercontent.com/SuikaRyp/Database/main/audio/1768006377238_n5h0qHwNrHk.mp3",
+    img: "https://raw.githubusercontent.com/SuikaRyp/Database/main/images/1768006388248_image_1768006388248.jpg",
+    duration: "4:50",
+    category: "sad",
+    popular: true
+},
+{
+    id: 50,
+    title: "No Surprises",
+    artist: "Radiohead",
+    album: "OK Computer",
+    src: "https://raw.githubusercontent.com/SuikaRyp/Database/main/audio/1768006470993_Radiohead_-_No_Surprises.mp3",
+    img: "https://raw.githubusercontent.com/SuikaRyp/Database/main/images/1768006477231_image_1768006477231.jpg",
+    duration: "3:49",
+    category: "sad",
+    popular: true
+},
+{
+    id: 51,
+    title: "High and Dry",
+    artist: "Radiohead",
+    album: "The Bends",
+    src: "https://raw.githubusercontent.com/SuikaRyp/Database/main/audio/1768006525796_Radiohead_-_High_and_Dry.mp3",
+    img: "https://raw.githubusercontent.com/SuikaRyp/Database/main/images/1768006528156_image_1768006528156.jpg",
+    duration: "4:17",
+    category: "sad",
+    popular: true
+},
+{
+    id: 52,
+    title: "Apocalypse",
+    artist: "Cigarettes After Sex",
+    album: "Cigarettes After Sex",
+    src: "https://raw.githubusercontent.com/SuikaRyp/Database/main/audio/1768006569623_Cigarettes_After_Sex_-_youtube_video__sElE_BfQ67s.mp3",
+    img: "https://raw.githubusercontent.com/SuikaRyp/Database/main/images/1768006604531_image_1768006604531.jpg",
+    duration: "4:50",
+    category: "sad",
+    popular: true
+},
+{
+    id: 53,
+    title: "Yellow",
+    artist: "Coldplay",
+    album: "Parachutes",
+    src: "https://raw.githubusercontent.com/SuikaRyp/Database/main/audio/1768006900587_Y4QbJRAWvRU.mp3",
+    img: "https://raw.githubusercontent.com/SuikaRyp/Database/main/images/1768006904617_image_1768006904617.jpg",
+    duration: "4:29",
+    category: "sad",
+    popular: true
+},
+{
+    id: 54,
+    title: "Fix You",
+    artist: "Coldplay",
+    album: "X&Y",
+    src: "https://raw.githubusercontent.com/SuikaRyp/Database/main/audio/1768006961689_Coldplay_-_Fix_You__Official_Video_.mp3",
+    img: "https://raw.githubusercontent.com/SuikaRyp/Database/main/images/1768006986259_image_1768006986259.jpg",
+    duration: "4:55",
+    category: "sad",
+    popular: true
+},
+{
+    id: 55,
+    title: "Creep",
+    artist: "Radiohead",
+    album: "Pablo Honey",
+    src: "https://raw.githubusercontent.com/SuikaRyp/Database/main/audio/1768007024463_Radiohead_-_Creep.mp3",
+    img: "https://raw.githubusercontent.com/SuikaRyp/Database/main/images/1768007032858_image_1768007032858.jpg",
+    duration: "3:58",
+    category: "sad",
+    popular: true
+},
+{
+    id: 56,
+    title: "Linger",
+    artist: "The Cranberries",
+    album: "Everybody Else Is Doing It, So Why Can't We?",
+    src: "https://raw.githubusercontent.com/SuikaRyp/Database/main/audio/1768007113206_G6Kspj3OO0s.mp3",
+    img: "https://raw.githubusercontent.com/SuikaRyp/Database/main/images/1768007119555_image_1768007119555.jpg",
+    duration: "4:34",
+    category: "sad",
+    popular: true
+},
+{
+    id: 57,
+    title: "Chasing Pavements",
+    artist: "Adele",
+    album: "19",
+    src: "https://raw.githubusercontent.com/SuikaRyp/Database/main/audio/1768007186136_Adele_-_Chasing_Pavements__Official_Music_Video_.mp3",
+    img: "https://raw.githubusercontent.com/SuikaRyp/Database/main/images/1768007351718_image_1768007351718.jpg",
+    duration: "3:30",
+    category: "sad",
+    popular: true
+},
+{
+    id: 58,
+    title: "The Only Exception",
+    artist: "Paramore",
+    album: "Brand New Eyes",
+    src: "https://raw.githubusercontent.com/SuikaRyp/Database/main/audio/1768007402354_Paramore_-_The_Only_Exception.mp3",
+    img: "https://raw.githubusercontent.com/SuikaRyp/Database/main/images/1768007404758_image_1768007404758.jpg",
+    duration: "4:27",
+    category: "sad",
+    popular: true
+},
+{
+    id: 59,
+    title: "cardigan",
+    artist: "Taylor Swift",
+    album: "folklore",
+    src: "https://raw.githubusercontent.com/SuikaRyp/Database/main/audio/1768007444025_Best_Part_Loop__with_Rain__slowed___reverb_.mp3",
+    img: "https://raw.githubusercontent.com/SuikaRyp/Database/main/images/1768007470589_image_1768007470589.jpg",
+    duration: "3:59",
+    category: "sad",
+    popular: true
+},
+{
+    id: 60,
+    title: "I Love You, I'm Sorry",
+    artist: "Gracie Abrams",
+    album: "Good Riddance",
+    src: "https://raw.githubusercontent.com/SuikaRyp/Database/main/audio/1768007536128_Gracie_Abrams_-_I_Love_You__I_m_Sorry__Lyrics_.mp3",
+    img: "https://raw.githubusercontent.com/SuikaRyp/Database/main/images/1768007538804_image_1768007538804.jpg",
+    duration: "2:37",
+    category: "sad",
+    popular: true
+},
+{
+    id: 61,
+    title: "Lover, You Should've Come Over",
+    artist: "Jeff Buckley",
+    album: "Grace",
+    src: "https://raw.githubusercontent.com/SuikaRyp/Database/main/audio/1768008315939_Jeff_Buckley_-_Lover__You_Should_ve_Come_Over.mp3",
+    img: "https://raw.githubusercontent.com/SuikaRyp/Database/main/images/1768008291529_image_1768008291529.jpg",
+    duration: "6:41",
+    category: "sad",
+    popular: true
+},
+{
+    id: 62,
+    title: "SLOW DANCING IN THE DARK",
+    artist: "Joji",
+    album: "BALLADS 1",
+    src: "https://raw.githubusercontent.com/SuikaRyp/Database/main/audio/1768008447514_Joji_-_SLOW_DANCING_IN_THE_DARK.mp3",
+    img: "https://raw.githubusercontent.com/SuikaRyp/Database/main/images/1768008454265_image_1768008454265.jpg",
+    duration: "3:29",
+    category: "sad",
+    popular: true
+},
+{
+    id: 63,
+    title: "Heather",
+    artist: "Conan Gray",
+    album: "Kid Krow",
+    src: "https://raw.githubusercontent.com/SuikaRyp/Database/main/audio/1768008495273_izge-rLlINE.mp3",
+    img: "https://raw.githubusercontent.com/SuikaRyp/Database/main/images/1768008504257_image_1768008504257.jpg",
+    duration: "3:18",
+    category: "sad",
+    popular: true
+},
+{
+    id: 64,
+    title: "White Ferrari",
+    artist: "Frank Ocean",
+    album: "Blonde",
+    src: "https://raw.githubusercontent.com/SuikaRyp/Database/main/audio/1768008548204_Frank_Ocean_-_White_Ferrari.mp3",
+    img: "https://raw.githubusercontent.com/SuikaRyp/Database/main/images/1768008555576_image_1768008555576.jpg",
+    duration: "4:09",
+    category: "sad",
+    popular: true
+},
+{
+    id: 65,
+    title: "Glimpse of Us",
+    artist: "Joji",
+    album: "Smithereens",
+    src: "https://raw.githubusercontent.com/SuikaRyp/Database/main/audio/1768008741005_Joji_-_Glimpse_Of_Us.mp3",
+    img: "https://raw.githubusercontent.com/SuikaRyp/Database/main/images/1768008745876_image_1768008745876.jpg",
+    duration: "3:53",
+    category: "sad",
+    popular: true
+},
+{
+    id: 66,
+    title: "As the World Caves In",
+    artist: "Matt Maltese",
+    album: "Bad Contestant",
+    src: "https://raw.githubusercontent.com/SuikaRyp/Database/main/audio/1768008833292_SqDjQPoJxiw.mp3",
+    img: "https://raw.githubusercontent.com/SuikaRyp/Database/main/images/1768008836769_image_1768008836769.jpg",
+    duration: "3:41",
+    category: "sad",
+    popular: true
+},
+{
+    id: 67,
+    title: "One More Night",
+    artist: "Marone 5",
+    album: "Marone 5",
+    src: "https://raw.githubusercontent.com/SuikaRyp/Database/main/audio/1768302890230_fwK7ggA3-bU.mp3",
+    img: "https://raw.githubusercontent.com/SuikaRyp/Database/main/images/1768302616950_image_1768302616950.jpg",
+    duration: "3:45",
+    category: "sad",
+    popular: true
+},
+{
+    id: 68,
+    title: "Yank",
+    artist: "Wali Band",
+    album: "Lagu Jawa Wali Band",
+    src: "https://raw.githubusercontent.com/SuikaRyp/Loriyagami/main/audio/1768306812713_Wali_Band_-_Yank__Official_Music_Video_NAGASWARA___music.mp3",
+    img: "https://raw.githubusercontent.com/SuikaRyp/Loriyagami/main/images/1768306853615_image_1768306853615.jpg",
+    duration: "3:45",
+    category: "sad",
+    popular: true
+},
+{
+    id: 69,
+    title: "Sugar",
+    artist: "Maroon 5",
+    album: "V",
+    src: "https://raw.githubusercontent.com/SuikaRyp/Loriyagami/main/audio/1768306926322_N1BcpzPGlYQ.mp3",
+    img: "https://raw.githubusercontent.com/SuikaRyp/Loriyagami/main/images/1768306977335_image_1768306977335.jpg",
+    duration: "3:55",
+    category: "happy",
+    popular: true
+},
+{
+    id: 70,
+    title: "Gingga S",
+    artist: "Takamiya",
+    album: "V",
+    src: "https://raw.githubusercontent.com/SuikaRyp/Loriyagami/main/audio/1768307238014_Ultra_Lyrics_-_Ginga_No_Uta__Ultraman_ginga_Opening__Lyrics.mp3",
+    img: "https://raw.githubusercontent.com/SuikaRyp/Loriyagami/main/images/1768307360300_image_1768307360300.jpg",
+    duration: "3:55",
+    category: "happy",
+    popular: true
+},
+{
+    id: 71,
+    title: "Memories",
+    artist: "Maroon 5",
+    album: "Lagu Galau lagu Sad",
+    src: "https://raw.githubusercontent.com/SuikaRyp/Loriyagami/main/audio/1768306599096_Maroon_5_-_Memories__Official_Video_.mp3",
+    img: "https://raw.githubusercontent.com/SuikaRyp/Loriyagami/main/images/1768306661820_image_1768306661820.jpg",
+    duration: "3:09",
+    category: "sad",
+    popular: true
+},
+{
+    id: 72,
+    title: "Faded",
+    artist: "Alan Walker",
+    album: "Lagu Galau lagu Sad",
+    src: "https://raw.githubusercontent.com/SuikaRyp/Loriyagami/main/audio/1768307469211_Alan_Walker_-_Faded__Lyrics_.mp3",
+    img: "https://raw.githubusercontent.com/SuikaRyp/Loriyagami/main/images/1768307497276_image_1768307497276.jpg",
+    duration: "3:32",
+    category: "sad",
+    popular: true
+},
+{
+    id: 73,
+    title: "Legend Of Galaxy",
+    artist: "Takamiya",
+    album: "Lagu Galau lagu Sad",
+    src: "https://raw.githubusercontent.com/SuikaRyp/Loriyagami/main/audio/1768367281381_Takamiy_-_Topic_-_Legend_of_Galaxy.mp3",
+    img: "https://raw.githubusercontent.com/SuikaRyp/Loriyagami/main/images/1768367341190_image_1768367341190.jpg",
+    duration: "5:54",
+    category: "motivational",
+    popular: true
+},
+{
+    id: 74,
+    title: "Sing Me To Sleep",
+    artist: "Alan Walker",
+    album: "Lagu Galau lagu Sad",
+    src: "https://raw.githubusercontent.com/SuikaRyp/Loriyagami/main/audio/1768367457424_Alan_Walker_-_Sing_Me_To_Sleep__Lyrics_.mp3",
+    img: "https://raw.githubusercontent.com/SuikaRyp/Loriyagami/main/images/1768367464163_image_1768367464163.jpg",
+    duration: "3:07",
+    category: "chill",
+    popular: true
+},
+{
+    id: 75,
+    title: "Darkside",
+    artist: "Alan Walker",
+    album: "Lagu Galau lagu Sad",
+    src: "https://raw.githubusercontent.com/SuikaRyp/Loriyagami/main/audio/1768367517375_NEONI_-_Darkside__Lyrics_.mp3",
+    img: "https://raw.githubusercontent.com/SuikaRyp/Loriyagami/main/images/1768367543189_image_1768367543189.jpg",
+    duration: "3:31",
+    category: "chill",
+    popular: true
+},
+{
+    id: 76,
+    title: "The Spectre",
+    artist: "Alan Walker",
+    album: "Lagu Galau lagu Sad",
+    src: "https://raw.githubusercontent.com/SuikaRyp/Loriyagami/main/audio/1768367589781_Alan_Walker_-_The_Spectre.mp3",
+    img: "https://raw.githubusercontent.com/SuikaRyp/Loriyagami/main/images/1768367597471_image_1768367597471.jpg",
+    duration: "3:13",
+    category: "edm",
+    popular: true
+},
+{
+    id: 77,
+    title: "On My Way",
+    artist: "Alan Walker",
+    album: "Different World",
+    src: "https://raw.githubusercontent.com/SuikaRyp/Loriyagami/main/audio/1768367654305_Alan_Walker__Sabrina_Carpenter___Farruko__-_On_My_Way.mp3",
+    img: "https://raw.githubusercontent.com/SuikaRyp/Loriyagami/main/images/1768367661199_image_1768367661199.jpg",
+    duration: "3:13",
+    category: "motivational",
+    popular: true
+},
+{
+    id: 78,
+    title: "All Falls Down",
+    artist: "Alan Walker",
+    album: "Diff",
+    src: "https://raw.githubusercontent.com/SuikaRyp/Loriyagami/main/audio/1768367703713_Alan_Walker_All_Falls_Down_feat_Noah_Cyrus_with_Digital_Farm.mp3",
+    img: "https://raw.githubusercontent.com/SuikaRyp/Loriyagami/main/images/1768367710102_image_1768367710102.jpg",
+    duration: "3:19",
+    category: "chill",
+    popular: true
+},
+{
+    id: 79,
+    title: "ending ultraman cosmos",
+    artist: "tsuburasa",
+    album: "Lagu Ultraman",
+    src: "https://raw.githubusercontent.com/SuikaRyp/Loriyagami/main/audio/1768368010288_killua_1762175195316_cc443gq4ljq.mp3",
+    img: "https://raw.githubusercontent.com/SuikaRyp/Loriyagami/main/images/1768368023593_image_1768368023593.jpg",
+    duration: "5:00",
+    category: "motivational",
+    popular: false
+},
+{
+    id: 80,
+    title: "Lily",
+    artist: "Alan Walker",
+    album: "Different World",
+    src: "https://raw.githubusercontent.com/SuikaRyp/Loriyagami/main/audio/1768389808700_ox4tmEV6-QU.mp3",
+    img: "https://raw.githubusercontent.com/SuikaRyp/Loriyagami/main/images/1768389907628_image_1768389907628.jpg",
+    duration: "3:15",
+    category: "sad",
+    popular: true
+},
+{
+    id: 81,
+    title: "Baby",
+    artist: "Justin Bieber",
+    album: "Lagu Galau Atau Sad",
+    src: "https://raw.githubusercontent.com/SuikaRyp/Loriyagami/main/audio/1768389990115_Justin_Bieber_-_Baby_ft._Ludacris.mp3",
+    img: "https://raw.githubusercontent.com/SuikaRyp/Loriyagami/main/images/1768389983196_image_1768389983196.jpg",
+    duration: "3:36",
+    category: "happy",
+    popular: true
+},
+{
+    id: 82,
+    title: "Sorry",
+    artist: "Justin Bieber",
+    album: "Lagu Galau Atau Sad",
+    src: "https://raw.githubusercontent.com/SuikaRyp/Loriyagami/main/audio/1768390150884_Justin_Bieber_-_Sorry__PURPOSE___The_Movement_.mp3",
+    img: "https://raw.githubusercontent.com/SuikaRyp/Loriyagami/main/images/1768390183608_image_1768390183608.jpg",
+    duration: "3:20",
+    category: "dance",
+    popular: true
+},
+{
+    id: 83,
+    title: "Love Yourself",
+    artist: "Justin Bieber",
+    album: "Justin Bieber",
+    src: "https://raw.githubusercontent.com/SuikaRyp/Loriyagami/main/audio/1768390230057_Justin_Bieber_-_Love_Yourself__Lyrics_.mp3",
+    img: "https://raw.githubusercontent.com/SuikaRyp/Loriyagami/main/images/1768391909255_image_1768391909255.jpg",
+    duration: "3:53",
+    category: "sad",
+    popular: true
+},
+{
+    id: 84,
+    title: "What Do You Mean?",
+    artist: "Justin Bieber",
+    album: "Justin Bieber",
+    src: "https://raw.githubusercontent.com/SuikaRyp/Loriyagami/main/audio/1768390360045_Justin_Bieber_-_What_Do_You_Mean.mp3",
+    img: "https://raw.githubusercontent.com/SuikaRyp/Loriyagami/main/images/1768390390753_image_1768390390753.jpg",
+    duration: "3:25",
+    category: "pop",
+    popular: true
+},
+{
+    id: 85,
+    title: "Yummy",
+    artist: "Justin Bieber",
+    album: "Justin Bieber",
+    src: "https://raw.githubusercontent.com/SuikaRyp/Loriyagami/main/audio/1768391513627_Justin_Bieber_-_Yummy__Official_Video_.mp3",
+    img: "https://raw.githubusercontent.com/SuikaRyp/Loriyagami/main/images/1768391520069_image_1768391520069.jpg",
+    duration: "3:30",
+    category: "chill",
+    popular: true
+},
+{
+    id: 86,
+    title: "Peaches",
+    artist: "Justin Bieber",
+    album: "Justice",
+    src: "https://raw.githubusercontent.com/SuikaRyp/Loriyagami/main/audio/1768391662412_Peaches_-__Boys_Wanna_Be_Her__Official_Music_Video.mp3",
+    img: "https://raw.githubusercontent.com/SuikaRyp/Loriyagami/main/images/1768391649900_image_1768391649900.jpg",
+    duration: "3:18",
+    category: "chill",
+    popular: true
+},
+{
+    id: 87,
+    title: "Ghost",
+    artist: "Justin Bieber",
+    album: "justin bieber Lagu Sad",
+    src: "https://raw.githubusercontent.com/SuikaRyp/Loriyagami/main/images/1768391717087_image_1768391717087.jpg",
+    img: "https://raw.githubusercontent.com/SuikaRyp/Loriyagami/main/images/1768392003508_image_1768392003508.jpg",
+    duration: "2:33",
+    category: "sad",
+    popular: true
+},
+{
+    id: 88,
+    title: "As Long As You Love Me",
+    artist: "Justin Bieber",
+    album: "Lagu Romantis Justin Bieber biber",
+    src: "https://raw.githubusercontent.com/SuikaRyp/Loriyagami/main/images/1768391786481_image_1768391786481.jpg",
+    img: "https://raw.githubusercontent.com/SuikaRyp/Loriyagami/main/images/1768391786481_image_1768391786481.jpg",
+    duration: "3:49",
+    category: "romance",
+    popular: true
+},
+{
+    id: 89,
+    title: "Boyfriend",
+    artist: "Justin Bieber",
+    album: "justin bieber",
+    src: "https://raw.githubusercontent.com/SuikaRyp/Loriyagami/main/audio/1768397998030_Dove_Cameron_-_Boyfriend__Lyrics_.mp3",
+    img: "https://raw.githubusercontent.com/SuikaRyp/Loriyagami/main/images/1768397978306_image_1768397978306.jpg",
+    duration: "2:51",
+    category: "pop",
+    popular: true
+},
+{
+    id: 90,
+    title: "Intentions",
+    artist: "Justin Bieber",
+    album: "justin bieber",
+    src: "https://raw.githubusercontent.com/SuikaRyp/Loriyagami/main/audio/1768398092516_Dove_Cameron_-_Boyfriend__Lyrics_.mp3",
+    img: "https://raw.githubusercontent.com/SuikaRyp/Loriyagami/main/images/1768398068461_image_1768398068461.jpg",
+    duration: "3:32",
+    category: "romance",
+    popular: true
+},
+{
+    id: 91,
+    title: "Ojo Dibandingke",
+    artist: "Denny Caknan",
+    album: "Lagu Jawa",
+    src: "https://raw.githubusercontent.com/SuikaRyp/Loriyagami/main/audio/1768398140560_Farel_Prayoga_Ojo_Di_Bandingke_Official_Music_Video_ANEKA_SAF.mp3",
+    img: "https://raw.githubusercontent.com/SuikaRyp/Loriyagami/main/images/1768398149843_image_1768398149843.jpg",
+    duration: "5:12",
+    category: "sad",
+    popular: true
+},
+{
+    id: 92,
+    title: "Kartonyono Medot Janji",
+    artist: "Denny Caknan",
+    album: "Lagu Jawa",
+    src: "https://raw.githubusercontent.com/SuikaRyp/Loriyagami/main/audio/1768398216011_Denny_Caknan_-_Kartonyono_Medot_Janji__Official_Music_Video_.mp3",
+    img: "https://raw.githubusercontent.com/SuikaRyp/Loriyagami/main/images/1768398224041_image_1768398224041.jpg",
+    duration: "5:05",
+    category: "sad",
+    popular: true
+},
+{
+    id: 93,
+    title: "Loss Dol",
+    artist: "Denny Caknan",
+    album: "Lagu Jawa",
+    src: "https://raw.githubusercontent.com/SuikaRyp/Loriyagami/main/audio/1768398296000_Denny_Caknan_-_LOS_DOL__Official_Music_Video_.mp3",
+    img: "https://raw.githubusercontent.com/SuikaRyp/Loriyagami/main/images/1768398307448_image_1768398307448.jpg",
+    duration: "4:40",
+    category: "happy",
+    popular: true
+},
+{
+    id: 94,
+    title: "Rungkad",
+    artist: "Happy Asmara",
+    album: "Single",
+    src: "https://raw.githubusercontent.com/SuikaRyp/Loriyagami/main/audio/1768398423342_HAPPY_ASMARA_FEAT_THE_SAXOBROTHERS_RUNGKAD_Official_Music_Vid.mp3",
+    img: "https://raw.githubusercontent.com/SuikaRyp/Loriyagami/main/images/1768398428709_image_1768398428709.jpg",
+    duration: "5:43",
+    category: "sad",
+    popular: true
+},
+{
+    id: 95,
+    title: "Wes Tatas",
+    artist: "Happy Asmara",
+    album: "Single",
+    src: "https://raw.githubusercontent.com/SuikaRyp/Loriyagami/main/audio/1768398477313_HAPPY_ASMARA_-_WES_TATAS__Official_Live_Music_Video_.mp3",
+    img: "https://raw.githubusercontent.com/SuikaRyp/Loriyagami/main/images/1768398484967_image_1768398484967.jpg",
+    duration: "4:58",
+    category: "sad",
+    popular: true
+},
+{
+    id: 96,
+    title: "Kuat Ati",
+    artist: "Happy Asmara",
+    album: "lagu jawa",
+    src: "https://raw.githubusercontent.com/SuikaRyp/Loriyagami/main/audio/1768398556340_Happy_Asmara_-_Kuat_Ati__Official_Music_Video_ANEKA_SAFARI_.mp3",
+    img: "https://raw.githubusercontent.com/SuikaRyp/Loriyagami/main/images/1768398535502_image_1768398535502.jpg",
+    duration: "4:46",
+    category: "sad",
+    popular: true
+},
+{
+    id: 97,
+    title: "Iso Tanpo Koe",
+    artist: "Happy Asmara",
+    album: "Lagu Jawa",
+    src: "https://raw.githubusercontent.com/SuikaRyp/Loriyagami/main/audio/1768398827697_DENNY_CAKNAN_-_ISO_TANPO_KOWE__OFFICIAL_LIVE_MUSIC_.mp3",
+    img: "https://raw.githubusercontent.com/SuikaRyp/Loriyagami/main/images/1768398853909_image_1768398853909.jpg",
+    duration: "5:01",
+    category: "sad",
+    popular: true
+},
+{
+    id: 98,
+    title: "Cerito Loro",
+    artist: "Happy Asmara",
+    album: "Lagu Jawa",
+    src: "https://raw.githubusercontent.com/SuikaRyp/Loriyagami/main/audio/1768398897937_Woro_Widowati_-_Cerito_Loro__Official_Music_Video_.mp3",
+    img: "https://raw.githubusercontent.com/SuikaRyp/Loriyagami/main/images/1768398903791_image_1768398903791.jpg",
+    duration: "4:55",
+    category: "sad",
+    popular: false
+},
+{
+    id: 99,
+    title: "Lungamu Ninggal Kenangan",
+    artist: "Syahiba Shaufa",
+    album: "Lagu Jawa",
+    src: "https://raw.githubusercontent.com/SuikaRyp/Loriyagami/main/audio/1768398977516_Syahiba_Saufa_-_Lungamu_Ninggal_Kenangan.mp3",
+    img: "https://raw.githubusercontent.com/SuikaRyp/Loriyagami/main/images/1768399069369_image_1768399069369.jpg",
+    duration: "4:49",
+    category: "sad",
+    popular: true
+},
+{
+    id: 100,
+    title: "Aku Bukan Jodohnya",
+    artist: "Yeni Inka",
+    album: "Lagu Jawa",
+    src: "https://raw.githubusercontent.com/SuikaRyp/Loriyagami/main/audio/1768399117689_Tri_Suaka_-_Aku_Bukan_Jodohnya__Official_Music_Video_.mp3",
+    img: "https://raw.githubusercontent.com/SuikaRyp/Loriyagami/main/images/1768399129315_image_1768399129315.jpg",
+    duration: "5:09",
+    category: "sad",
+    popular: true
+},
+{
+    id: 101,
+    title: "Mendung Tanpo Udan",
+    artist: "Ndarboy Genk",
+    album: "lagu jawa",
+    src: "https://raw.githubusercontent.com/SuikaRyp/Loriyagami/main/audio/1768399332235_Ndarboy_Genk_Mendung_Tanpo_Udan_Official_Music_Video_Versi_D.mp3",
+    img: "https://raw.githubusercontent.com/SuikaRyp/Loriyagami/main/images/1768399332686_image_1768399332686.jpg",
+    duration: "4:59",
+    category: "sad",
+    popular: true
+},
+{
+    id: 102,
+    title: "Ojo Nangis",
+    artist: "Ndarboy Genk feat. Denny Caknan",
+    album: "lagu jawa",
+    src: "https://raw.githubusercontent.com/SuikaRyp/Loriyagami/main/audio/1768399389682_HAPPY_ASMARA_-_OJO_NANGIS__Official_Live_Music_Video_.mp3",
+    img: "https://raw.githubusercontent.com/SuikaRyp/Loriyagami/main/images/1768399390568_image_1768399390568.jpg",
+    duration: "4:45",
+    category: "sad",
+    popular: true
+},
+{
+    id: 103,
+    title: "Sanes",
+    artist: "Guyon Waton",
+    album: "lagu jawa",
+    src: "https://raw.githubusercontent.com/SuikaRyp/Loriyagami/main/audio/1768399505275_GuyonWaton_x_Denny_Caknan_-_SANES__Official_Music_Video_.mp3",
+    img: "https://raw.githubusercontent.com/SuikaRyp/Loriyagami/main/images/1768399505790_image_1768399505790.jpg",
+    duration: "5:00",
+    category: "sad",
+    popular: true
+},
+{
+    id: 104,
+    title: "Dalan Liyane",
+    artist: "Guyon Waton",
+    album: "Lagu Jawa",
+    src: "https://raw.githubusercontent.com/SuikaRyp/Loriyagami/main/audio/1768399588364_Happy_Asmara_Dalan_Liyane_Official_Music_Video_ANEKA_SAFARI.mp3",
+    img: "https://raw.githubusercontent.com/SuikaRyp/Loriyagami/main/images/1768399592709_image_1768399592709.jpg",
+    duration: "4:52",
+    category: "sad",
+    popular: true
+},
+{
+    id: 105,
+    title: "Prau Layar",
+    artist: "Nella Kharisma",
+    album: "lagu jawa",
+    src: "https://raw.githubusercontent.com/SuikaRyp/Loriyagami/main/audio/1768399679238_Nella_Kharisma_-_Prau_Layar.mp3",
+    img: "https://raw.githubusercontent.com/SuikaRyp/Loriyagami/main/images/1768399704227_image_1768399704227.jpg",
+    duration: "4:33",
+    category: "happy",
+    popular: true
+},
+{
+    id: 106,
+    title: "Boso Moto",
+    artist: "Suliana",
+    album: "Lagu Jawa",
+    src: "https://raw.githubusercontent.com/SuikaRyp/Loriyagami/main/audio/1768399776952_Suliyana_-_Bohoso_Moto__Official_Music_Video_.mp3",
+    img: "https://raw.githubusercontent.com/SuikaRyp/Loriyagami/main/images/1768399781274_image_1768399781274.jpg",
+    duration: "4:41",
+    category: "sad",
+    popular: true
+},
+{
+    id: 107,
+    title: "Tali Asmoro",
+    artist: "NDX AKA",
+    album: "Lagu Jawa",
+    src: "https://raw.githubusercontent.com/SuikaRyp/Loriyagami/main/audio/1768399960428_NDX_A.K.A_-_TALINING_ASMORO.mp3",
+    img: "https://raw.githubusercontent.com/SuikaRyp/Loriyagami/main/images/1768400026293_image_1768400026293.jpg",
+    duration: "5:06",
+    category: "romance",
+    popular: true
+},
+  {
+    "id": 108,
+    "title": "Daylight",
+    "artist": "David Kushner",
+    "album": "Daylight - Single",
+    "src": "https://raw.githubusercontent.com/SuikaRyp/Loriyagami/main/audio/1768660289382_David_Kushner_-_Daylight__Official_Music_Video_.mp3",
+    "img": "https://raw.githubusercontent.com/SuikaRyp/Loriyagami/main/images/1768660374741_image_1768660374741.jpg",
+    "duration": "3:50",
+    "category": "chill",
+    "popular": true
+  },
+  {
+    "id": 109,
+    "title": "Those Eyes",
+    "artist": "New West",
+    "album": "Those Eyes - Single",
+    "src": "https://raw.githubusercontent.com/SuikaRyp/Loriyagami/main/audio/1768660622279_New_West_-_Those_Eyes__Lyrics_.mp3",
+    "img": "https://raw.githubusercontent.com/SuikaRyp/Loriyagami/main/images/1768660625857_image_1768660625857.jpg",
+    "duration": "3:45",
+    "category": "romance",
+    "popular": true
+  },
+  {
+    "id": 110,
+    "title": "Angels Like You",
+    "artist": "Miley Cyrus",
+    "album": "Plastic Hearts",
+    "src": "https://raw.githubusercontent.com/SuikaRyp/Loriyagami/main/audio/1768695244229_Miley_Cyrus_-_Angels_Like_You__Official_Video_.mp3",
+    "img": "https://raw.githubusercontent.com/SuikaRyp/Loriyagami/main/images/1768695253420_image_1768695253420.jpg",
+    "duration": "4:05",
+    "category": "emotional",
+    "popular": true
+  },
+  {
+    "id": 111,
+    "title": "Snooze",
+    "artist": "SZA",
+    "album": "SOS",
+    "src": "https://raw.githubusercontent.com/SuikaRyp/Penyimpanan-Lagu/main/audio/1770652037086_SZA_-_Snooze__Audio_.mp3",
+    "img": "https://raw.githubusercontent.com/SuikaRyp/Penyimpanan-Lagu/main/images/1770652120322_image_1770652120322.jpg",
+    "duration": "3:23",
+    "category": "rnb",
+    "popular": true
+  },
+  {
+    "id": 112,
+    "title": "Stereo Hearts",
+    "artist": "Fueled By Ramen",
+    "album": "Lagu Old Nostalgia",
+    "src": "https://raw.githubusercontent.com/SuikaRyp/Penyimpanan-Lagu/main/audio/1770652300664_Fueled_By_Ramen_Gym_Class_Heroes_Stereo_Hearts_ft_Adam_Levin.mp3",
+    "img": "https://raw.githubusercontent.com/SuikaRyp/Penyimpanan-Lagu/main/images/1770652415308_image_1770652415308.jpg",
+    "duration": "3:37",
+    "category": "pop",
+    "popular": true
+  },
+  {
+    "id": 113,
+    "title": "Texas Hold 'Em",
+    "artist": "Beyoncé",
+    "album": "Cowboy Carter",
+    "src": "https://example.com/audio/texas-hold-em.mp3",
+    "img": "https://example.com/images/cowboy-carter.jpg",
+    "duration": "3:05",
+    "category": "country",
+    "popular": true
+  },
+  {
+    "id": 114,
+    "title": "Pacar Yang Hilang",
+    "artist": "Biru Band",
+    "album": "Lagu Indo",
+    "src": "https://raw.githubusercontent.com/SuikaRyp/Loriyagami/main/audio/1768659175897_Biru_Band_-_Pacar_Yang_Hilang__Official_Music_Video_.mp3",
+    "img": "https://raw.githubusercontent.com/SuikaRyp/Loriyagami/main/images/1768659207145_image_1768659207145.jpg",
+    "duration": "5:06",
+    "category": "romance",
+    "popular": true
+  },
+  {
+    "id": 115,
+    "title": "Hujan",
+    "artist": "Utopia",
+    "album": "Happy",
+    "src": "https://raw.githubusercontent.com/SuikaRyp/Penyimpanan-Lagu/main/audio/1770653199820_Utopia_-_Hujan.mp3",
+    "img": "https://raw.githubusercontent.com/SuikaRyp/Penyimpanan-Lagu/main/images/1770653279960_image_1770653279960.jpg",
+    "duration": "3:49",
+    "category": "pop",
+    "popular": true
+  },
+  {
+    "id": 116,
+    "title": "Tak Segampang Itu",
+    "artist": "Anggi Marito",
+    "album": "Tak Segampang Itu - Single",
+    "src": "https://example.com/audio/tak-segampang-itu.mp3",
+    "img": "https://example.com/images/anggi-marito-cover.jpg",
+    "duration": "4:15",
+    "category": "indonesia",
+    "popular": true
+  },
+  {
+    "id": 117,
+    "title": "Penjaga Hati",
+    "artist": "Nadin Amizah",
+    "album": "Selamat Ulang Tahun",
+    "src": "https://raw.githubusercontent.com/SuikaRyp/Penyimpanan-Lagu/main/audio/1770652560400_nadhif_basalamah_-_penjaga_hati__Official_Music_Video_.mp3",
+    "img": "https://raw.githubusercontent.com/SuikaRyp/Penyimpanan-Lagu/main/images/1770652592769_image_1770652592769.jpg",
+    "duration": "4:20",
+    "category": "indonesia",
+    "popular": true
+  },
+  {
+    "id": 118,
+    "title": "Tobat Maksiat",
+    "artist": "Wali Band",
+    "album": "Wali Band",
+    "src": "https://raw.githubusercontent.com/SuikaRyp/Penyimpanan-Lagu/main/audio/1770822432976_Wali_Band_Tobat_Maksiat_Tomat_Official_Music_Video_NAGASWAR.mp3",
+    "img": "https://raw.githubusercontent.com/SuikaRyp/Penyimpanan-Lagu/main/images/1770822563701_image_1770822563701.jpg",
+    "duration": "4:27",
+    "category": "nostalgia",
+    "popular": true
+  },
+  {
+    "id": 119,
+    "title": "Sesuatu Yang Sempurna",
+    "artist": "Hijau Daun",
+    "album": "Lagu Cinta Hijau Daun",
+    "src": "https://raw.githubusercontent.com/SuikaRyp/Penyimpanan-Lagu/main/audio/1770822722605_Hijau_Daun_-_Sesuatu_Yang_Sempurna__Official_Video_Clip_.mp3",
+    "img": "https://raw.githubusercontent.com/SuikaRyp/Penyimpanan-Lagu/main/images/1770822822113_image_1770822822113.jpg",
+    "duration": "4:45",
+    "category": "pop",
+    "popular": true
+  },
+  {
+    "id": 120,
+    "title": "Dj Pahit Asam Manis Nya Cinta",
+    "artist": "",
+    "album": "Dj Afriantoft",
+    "src": "https://raw.githubusercontent.com/SuikaRyp/Penyimpanan-Lagu/main/audio/1771156724184_DJ_Apriyantoft_-_DJ_PAHIT_ASAM_MANISNYA_CINTA_MOCIL_FVNKY.mp3",
+    "img": "https://raw.githubusercontent.com/SuikaRyp/Penyimpanan-Lagu/main/images/1771156788038_image_1771156788038.jpg",
+    "duration": "6:23",
+    "category": "pop",
+    "popular": true
+  },
+  {
+    "id": 121,
+    "title": "Greedy",
+    "artist": "Tate McRae",
+    "album": "Think Later",
+    "src": "https://raw.githubusercontent.com/SuikaRyp/Loriyagami/main/audio/1768722928825_Tate_McRae_-_greedy__Official_Video_.mp3",
+    "img": "https://raw.githubusercontent.com/SuikaRyp/Loriyagami/main/images/1768722953328_image_1768722953328.jpg",
+    "duration": "2:12",
+    "category": "pop",
+    "popular": true
+  },
+  {
+    "id": 122,
+    "title": "Dance The Night",
+    "artist": "Dua Lipa",
+    "album": "Barbie The Album",
+    "src": "https://raw.githubusercontent.com/SuikaRyp/Loriyagami/main/audio/1768722864733_Dua_Lipa_-_Dance_The_Night.mp3",
+    "img": "https://raw.githubusercontent.com/SuikaRyp/Loriyagami/main/images/1768722873038_image_1768722873038.jpg",
+    "duration": "2:54",
+    "category": "dance",
+    "popular": true
+  },
+  {
+    "id": 123,
+    "title": "Sedia aku sebelum hujan",
+    "artist": "Idgitaf",
+    "album": "Lagu Indo",
+    "src": "https://raw.githubusercontent.com/SuikaRyp/Loriyagami/main/audio/1768708144683_Idgitaf_-_Sedia_Aku_Sebelum_Hujan__Official_Lyric_Video_.mp3",
+    "img": "https://raw.githubusercontent.com/SuikaRyp/Loriyagami/main/images/1768708104871_image_1768708104871.jpg",
+    "duration": "4:15",
+    "category": "pop",
+    "popular": true
+  },
+  {
+    "id": 124,
+    "title": "Kota ini tak sama tanpamu",
+    "artist": "Nadhif Basalamah",
+    "album": "Lagu Indo",
+    "src": "https://raw.githubusercontent.com/SuikaRyp/Loriyagami/main/audio/1768708380967_nadhif_basalamah_-_youtube_video__grp6FCnioMM.mp3",
+    "img": "https://raw.githubusercontent.com/SuikaRyp/Loriyagami/main/images/1768708398550_image_1768708398550.jpg",
+    "duration": "3:45",
+    "category": "pop",
+    "popular": true
+  },
+  {
+    "id": 125,
+    "title": "Dj Sedia Aku Sebelum Hujan",
+    "artist": "Nadhif Bashmala",
+    "album": "Lagu Indo",
+    "src": "https://raw.githubusercontent.com/SuikaRyp/Loriyagami/main/audio/1768718419208_Maman_Fvndy_Rmx_DJ_SEDIA_AKU_SEBELUM_HUJAN_X_SO_ASU_NAYKILLA_S.mp3",
+    "img": "https://raw.githubusercontent.com/SuikaRyp/Loriyagami/main/images/1768718144757_image_1768718144757.jpg",
+    "duration": "4:02",
+    "category": "pop",
+    "popular": true
+  },
+  {
+    "id": 126,
+    "title": "Berakhir di aku",
+    "artist": "Idgitaf",
+    "album": "Lagu Indo",
+    "src": "https://raw.githubusercontent.com/SuikaRyp/Loriyagami/main/audio/1768718485381_Idgitaf_Berakhir_di_Aku_OST_Home_Sweet_Loan_Official_Lyric.mp3",
+    "img": "https://raw.githubusercontent.com/SuikaRyp/Loriyagami/main/images/1768718497676_image_1768718497676.jpg",
+    "duration": "3:58",
+    "category": "pop",
+    "popular": true
+  },
+  {
+    "id": 127,
+    "title": "Semata Karenamu",
+    "artist": "Mario G. Klau",
+    "album": "Lagu Indo",
+    "src": "https://raw.githubusercontent.com/SuikaRyp/Loriyagami/main/audio/1768718545837_MARIO_G_KLAU_-_SEMATA_KARENAMU__OFFICIAL_MUSIC_VIDEO_.mp3",
+    "img": "https://raw.githubusercontent.com/SuikaRyp/Loriyagami/main/images/1768718548481_image_1768718548481.jpg",
+    "duration": "4:12",
+    "category": "pop",
+    "popular": true
+  },
+  {
+    "id": 128,
+    "title": "Sementara",
+    "artist": "Float",
+    "album": "Lagu Indo",
+    "src": "https://raw.githubusercontent.com/SuikaRyp/Loriyagami/main/audio/1768718604510_Nurizwan_Azmi_-_Euforia_Sementara___Official_Music_Video_.mp3",
+    "img": "https://raw.githubusercontent.com/SuikaRyp/Loriyagami/main/images/1768718721663_image_1768718721663.jpg",
+    "duration": "3:35",
+    "category": "alternative",
+    "popular": true
+  },
+  {
+    "id": 129,
+    "title": "Kukira kau rumah",
+    "artist": "Amigdala",
+    "album": "Lagu Indo",
+    "src": "https://raw.githubusercontent.com/SuikaRyp/Loriyagami/main/audio/1768718767691_Pendarra_-_Kukira_Kau_Rumah.mp3",
+    "img": "https://raw.githubusercontent.com/SuikaRyp/Loriyagami/main/images/1768718824916_image_1768718824916.jpg",
+    "duration": "4:25",
+    "category": "indie",
+    "popular": true
+  },
+  {
+    "id": 130,
+    "title": "Kenangan manis",
+    "artist": "Pamungkas",
+    "album": "Lagu Indo",
+    "src": "https://raw.githubusercontent.com/SuikaRyp/Loriyagami/main/audio/1768719293245_Pamungkas_-_Kenangan_Manis__Lyrics_Video_.mp3",
+    "img": "https://raw.githubusercontent.com/SuikaRyp/Loriyagami/main/images/1768719300370_image_1768719300370.jpg",
+    "duration": "3:27",
+    "category": "pop",
+    "popular": true
+  },
+  {
+    "id": 131,
+    "title": "Komang",
+    "artist": "Raim Laode",
+    "album": "Lagu Indo",
+    "src": "https://raw.githubusercontent.com/SuikaRyp/Loriyagami/main/audio/1768719431416_KOMANG_-_RAIM_LAODE_LYRIC_OFFICIAL.mp3",
+    "img": "https://raw.githubusercontent.com/SuikaRyp/Loriyagami/main/images/1768719493021_image_1768719493021.jpg",
+    "duration": "3:42",
+    "category": "folk",
+    "popular": true
+  },
+  {
+    "id": 132,
+    "title": "Alamak",
+    "artist": "Rizky Febian",
+    "album": "Lagu Indo",
+    "src": "https://raw.githubusercontent.com/SuikaRyp/Loriyagami/main/audio/1768719576651_Rizky_Febian___Adrian_Khalif_-_Alamak__Official_Lyric_Video_.mp3",
+    "img": "https://raw.githubusercontent.com/SuikaRyp/Loriyagami/main/images/1768719588251_image_1768719588251.jpg",
+    "duration": "3:50",
+    "category": "pop",
+    "popular": true
+  },
+  {
+    "id": 133,
+    "title": "Runtuh",
+    "artist": "Feby Putri",
+    "album": "Lagu Indo", 
+    "src": "https://raw.githubusercontent.com/SuikaRyp/Loriyagami/main/audio/1768719661979_Runtuh_Feby_Putri_feat_Fiersa_Besari_Official_Visualizer.mp3",
+    "img": "https://raw.githubusercontent.com/SuikaRyp/Loriyagami/main/images/1768719666675_image_1768719666675.jpg",
+    "duration": "4:08",
+    "category": "pop",
+    "popular": true
+  },
+  {
+    "id": 134,
+    "title": "Garis terdepan",
+    "artist": "Fiersa Besari",
+    "album": "Lagu Indo",
+    "src": "https://raw.githubusercontent.com/SuikaRyp/Loriyagami/main/audio/1768721894871_Fiersa_Besari_-_Topic_-_Garis_Terdepan.mp3",
+    "img": "https://raw.githubusercontent.com/SuikaRyp/Loriyagami/main/images/1768721902364_image_1768721902364.jpg",
+    "duration": "4:30",
+    "category": "folk",
+    "popular": true
+  },
+  {
+    "id": 135,
+    "title": "Sempurna",
+    "artist": "Andra and the Backbone",
+    "album": "Lagu Indo",
+    "src": "https://raw.githubusercontent.com/SuikaRyp/Loriyagami/main/audio/1768722050298_Andra_and_The_Backbone_-_Sempurna__lyrics_.mp3",
+    "img": "https://raw.githubusercontent.com/SuikaRyp/Loriyagami/main/images/1768722164756_image_1768722164756.jpg",
+    "duration": "4:26",
+    "category": "rock",
+    "popular": true
+  },
+  {
+    "id": 136,
+    "title": "Kita usahakan lagi",
+    "artist": "Batas Senja",
+    "album": "Lagu Indo",
+    "src": "https://raw.githubusercontent.com/SuikaRyp/Loriyagami/main/audio/1768722231960_BATAS_SENJA_-_Kita_Usahakan_Lagi__Official_Lyric_Video__.mp3",
+    "img": "https://raw.githubusercontent.com/SuikaRyp/Loriyagami/main/images/1768722305373_image_1768722305373.jpg",
+    "duration": "4:05",
+    "category": "indie",
+    "popular": false
+  },
+  {
+    "id": 137,
+    "title": "Perayaan Mati Rasa",
+    "artist": "Umay Shahab",
+    "album": "Lagu Indo",
+    "src": "https://raw.githubusercontent.com/SuikaRyp/Loriyagami/main/audio/1768722371383_UMAY_SHAHAB_-_perayaan_mati_rasa.mp3",
+    "img": "https://raw.githubusercontent.com/SuikaRyp/Loriyagami/main/images/1768722378771_image_1768722378771.jpg",
+    "duration": "3:55",
+    "category": "pop",
+    "popular": true
+  },
+  {
+    "id": 138,
+    "title": "Mangu",
+    "artist": "Fourtwnty",
+    "album": "Lagu Indo",
+    "src": "https://raw.githubusercontent.com/SuikaRyp/Loriyagami/main/audio/1768722439154_Mangu_-_Fourtwnty__Lyrics_.mp3",
+    "img": "https://raw.githubusercontent.com/SuikaRyp/Loriyagami/main/images/1768722509457_image_1768722509457.jpg",
+    "duration": "4:18",
+    "category": "alternative",
+    "popular": true
+  },
+  {
+    "id": 139,
+    "title": "Bunga Maaf",
+    "artist": "The Lantis",
+    "album": "Single",
+    "src": "https://raw.githubusercontent.com/SuikaRyp/Loriyagami/main/audio/bunga-maaf.mp3",
+    "img": "https://raw.githubusercontent.com/SuikaRyp/Loriyagami/main/images/1768722595855_image_1768722595855.jpg",
+    "duration": "3:40",
+    "category": "rock",
+    "popular": false
+  },
+{
+"id": 140,
+"title": "Bergema selamanya",
+"artist": "Nadhif Basalamah",
+"album": "Single",
+"src": "https://raw.githubusercontent.com/SuikaRyp/Loriyagami/main/audio/1768722652762_Nadhif_Basalamah_bergema_sampai_selamanya_Official_Lyric_Vide.mp3",
+"img": "https://raw.githubusercontent.com/SuikaRyp/Loriyagami/main/images/1768722680364_image_1768722680364.jpg",
+"duration": "3:50",
+"category": "pop",
+"popular": true
+},
+{
+"id": 141,
+"title": "Whare We Are",
+"artist": "One Derection",
+"album": "Lagu Galau",
+"src": "https://raw.githubusercontent.com/SuikaRyp/Abonimau/main/audio/1770343126934_One_direction_-_Where_we_are__Unreleased__Music_video.mp3",
+"img": "https://raw.githubusercontent.com/SuikaRyp/Abonimau/main/images/1770343205623_image_1770343205623.jpg",
+"duration": "3:42",
+"category": "pop",
+"popular": true
+},
+{
+"id": 142,
+"title": "Terlalu Lama",
+"artist": "Viera",
+"album": "Lagau Galau Lagu Sedih Viera",
+"src": "https://raw.githubusercontent.com/SuikaRyp/Abonimau/main/audio/1770342423813_Vierra_-_Terlalu_Lama__Official_Music_Video_.mp3",
+"img": "https://raw.githubusercontent.com/SuikaRyp/Abonimau/main/images/1770342665163_image_1770342665163.jpg",
+"duration": "4:07",
+"category": "pop",
+"popular": true
+},
+{
+"id": 143,
+"title": "8 Lettrs",
+"artist": "Why Don`t We",
+"album": "Single",
+"src": "https://raw.githubusercontent.com/SuikaRyp/Abonimau/main/audio/1770344062666_Why_Don_t_We_-_8_Letters__Lyrics_.mp3",
+"img": "https://raw.githubusercontent.com/SuikaRyp/Abonimau/main/images/1770344242264_image_1770344242264.jpg",
+"duration": "4:04",
+"category": "pop",
+"popular": true
+},
+{
+"id": 144,
+"title": "Dj Bukan Cinta Biasa",
+"artist": "Siti Nurhaliza",
+"album": "Lagu Dj",
+"src": "https://raw.githubusercontent.com/SuikaRyp/Abonimau/main/audio/1770345189911_Dj_Dhevia_Fvnky_DJ_BUKAN_CINTA_BIASA_CINTAKU_BUKAN_DIATAS_KE.mp3",
+"img": "https://raw.githubusercontent.com/SuikaRyp/Abonimau/main/images/1770345397754_image_1770345397754.jpg",
+"duration": "5:52",
+"category": "pop",
+"popular": true
+},
+{
+"id": 145,
+"title": "Ending Song Nexus",
+"artist": "Project DMM",
+"album": "Ultraman Nexus",
+"src": "https://raw.githubusercontent.com/SuikaRyp/Abonimau/main/audio/1770345658785______IN_db_Official_Channel______IN_db__________________.mp3",
+"img": "https://raw.githubusercontent.com/SuikaRyp/Abonimau/main/images/1770345858394_image_1770345858394.jpg",
+"duration": "3:13",
+"category": "pop",
+"popular": true
+},
+{
+"id": 146,
+"title": "Tewas Tertimbun Masalalu (TTM)",
+"artist": "N.D.X A.K.A",
+"album": "Lagu Galau Lagu Jawa",
+"src": "https://raw.githubusercontent.com/SuikaRyp/Abonimau/main/audio/1770346301021_NDX_AKA_-_Tewas_Tertimbun_Masa_Lalu__TTM_.mp3",
+"img": "https://raw.githubusercontent.com/SuikaRyp/Abonimau/main/images/1770346651810_image_1770346651810.jpg",
+"duration": "4:04",
+"category": "pop",
+"popular": true
+},
+{
+"id": 147,
+"title": "Starlight",
+"artist": "Ultra Lyric",
+"album": "Ultraman Gingga",
+"src": "https://raw.githubusercontent.com/SuikaRyp/Abonimau/main/audio/1770351799070_Ultra_Lyrics_-_STARLIGHT__Ultraman_Ginga_Ending__Lyrics.mp3",
+"img": "https://raw.githubusercontent.com/SuikaRyp/Abonimau/main/images/1770351865977_image_1770351865977.jpg",
+"duration": "4:37",
+"category": "pop",
+"popular": true
+},
+{
+"id": 148,
+"title": "Resah Dadi Pelangi",
+"artist": "N.D.X A.K.A",
+"album": "Lagu Galau Lagu Jawa N.D.X A.K.A",
+"src": "https://raw.githubusercontent.com/SuikaRyp/Abonimau/main/audio/1770383230435_NDX_A.K.A_-_Rasah_Dadi_Pelangi___Official_Music_Video__.mp3",
+"img": "https://raw.githubusercontent.com/SuikaRyp/Abonimau/main/images/1770382910296_image_1770382910296.jpg",
+"duration": "3:57",
+"category": "pop",
+"popular": true
+},
+{
+"id": 149,
+"title": "Menerima Luka",
+"artist": "Natasya Sabila",
+"album": "Natasya Sabila Lagu galau",
+"src": "https://raw.githubusercontent.com/SuikaRyp/Penyimpanan-Lagu/main/audio/1770454651511_NATASYA_SABELLA_-_MENERIMA_LUKA___OFFICIAL_LYRICS_VIDEO__.mp3",
+"img": "https://raw.githubusercontent.com/SuikaRyp/Penyimpanan-Lagu/main/images/1770454709849_image_1770454709849.jpg",
+"duration": "3:37",
+"category": "pop",
+"popular": true
+},
+{
+"id": 150,
+"title": "Ours To Keep Ft Adies Official",
+"artist": "Kendis",
+"album": "Lagu Galau",
+"src": "https://raw.githubusercontent.com/SuikaRyp/Penyimpanan-Lagu/main/audio/1770552782253_Kendis_-_ours_to_keep__feat._adis___Official_Lyric_Video_.mp3",
+"img": "https://raw.githubusercontent.com/SuikaRyp/Penyimpanan-Lagu/main/images/1770823073140_image_1770823073140.jpg",
+"duration": "3:26",
+"category": "pop",
+"popular": true
+},
+{
+"id": 151,
+"title": "Bergema selamanya",
+"artist": "Nadhif Basalamah",
+"album": "Single",
+"src": "https://raw.githubusercontent.com/SuikaRyp/Loriyagami/main/audio/1768722652762_Nadhif_Basalamah_bergema_sampai_selamanya_Official_Lyric_Vide.mp3",
+"img": "https://raw.githubusercontent.com/SuikaRyp/Loriyagami/main/images/1768722680364_image_1768722680364.jpg",
+"duration": "3:50",
+"category": "pop",
+"popular": true
+},
+{
+"id": 152,
+"title": "Bad Liar",
+"artist": "Imagine Dragons",
+"album": "Lagu Old Nostalgia",
+"src": "https://raw.githubusercontent.com/SuikaRyp/Penyimpanan-Lagu/main/audio/1770553095189_Imagine_Dragons_-_Bad_Liar.mp3",
+"img": "https://raw.githubusercontent.com/SuikaRyp/Penyimpanan-Lagu/main/images/1770553213349_image_1770553213349.jpg",
+"duration": "4:44",
+"category": "pop",
+"popular": true
+},
+{
+"id": 153,
+"title": "Beuty And A beat",
+"artist": "Justin Bieber",
+"album": "Justin Bieber",
+"src": "https://raw.githubusercontent.com/SuikaRyp/Penyimpanan-Lagu/main/audio/1770553338162_Justin_Bieber_Beauty_And_A_Beat_Official_Music_Video_ft_Nic.mp3",
+"img": "https://raw.githubusercontent.com/SuikaRyp/Penyimpanan-Lagu/main/images/1770553377371_image_1770553377371.jpg",
+"duration": "3:50",
+"category": "pop",
+"popular": true
+},
+{
+"id": 154,
+"title": "As if it`s Your Last",
+"artist": "BLACK PINK",
+"album": "BLACK PINK",
+"src": "https://raw.githubusercontent.com/SuikaRyp/Penyimpanan-Lagu/main/audio/1770553529219_V.mp3",
+"img": "https://raw.githubusercontent.com/SuikaRyp/Penyimpanan-Lagu/main/images/1770553707206_image_1770553707206.jpg",
+"duration": "3:37",
+"category": "pop",
+"popular": true
+},
+{
+"id": 155,
+"title": "Sekuat Hatimu",
+"artist": "Last Child",
+"album": "Lagu Galau Last Child",
+"src": "https://raw.githubusercontent.com/SuikaRyp/Penyimpanan-Lagu/main/audio/1770553826330_LAST_CHILD_-_Sekuat_Hatimu__Official_Lyric_Video_.mp3",
+"img": "https://raw.githubusercontent.com/SuikaRyp/Penyimpanan-Lagu/main/images/1770553895708_image_1770553895708.jpg",
+"duration": "4:42",
+"category": "pop",
+"popular": true
+},
+{
+"id": 156,
+"title": "Diary Depresiku",
+"artist": "Last Child",
+"album": "Lagu Galau Last Child",
+"src": "https://raw.githubusercontent.com/SuikaRyp/Penyimpanan-Lagu/main/audio/1770555968040_Last_Child_-_Diary_Depresiku__Lirik_.mp3",
+"img": "https://raw.githubusercontent.com/SuikaRyp/Penyimpanan-Lagu/main/images/1770556073125_image_1770556073125.jpg",
+"duration": "5:18",
+"category": "pop",
+"popular": true
+},
+{
+"id": 157,
+"title": "Percayalah",
+"artist": "SITI NURHALIZA",
+"album": "single",
+"src": "https://raw.githubusercontent.com/SuikaRyp/Penyimpanan-Lagu/main/audio/1770556210413_Percayalah_-_Official_Lyric_Video.mp3",
+"img": "https://raw.githubusercontent.com/SuikaRyp/Penyimpanan-Lagu/main/images/1770556312739_image_1770556312739.jpg",
+"duration": "4:43",
+"category": "pop",
+"popular": true
+},
+{
+"id": 158,
+"title": "Indah Tak Sempurna",
+"artist": "STAND HERE ALONE",
+"album": "Single",
+"src": "https://raw.githubusercontent.com/SuikaRyp/Penyimpanan-Lagu/main/audio/1770556440393_STAND_HERE_ALONE_INDAH_TAK_SEMPURNA_OFFICIAL_MUSIC_VIDEO_.mp3",
+"img": "https://raw.githubusercontent.com/SuikaRyp/Penyimpanan-Lagu/main/images/1770556479265_image_1770556479265.jpg",
+"duration": "4:11",
+"category": "pop",
+"popular": true
+},
+{
+"id": 159,
+"title": "DJ TANTE HOLIC",
+"artist": "DJ PAJAR SKY RIMEX",
+"album": "Lagu Happy",
+"src": "https://raw.githubusercontent.com/SuikaRyp/Penyimpanan-Lagu/main/audio/1770556706807_DJ_Pajarsky_Rimex_DJ_TEMANKU_SEMUA_PADA_JAHAT_TANTE_TREND_TANT.mp3",
+"img": "https://raw.githubusercontent.com/SuikaRyp/Penyimpanan-Lagu/main/images/1770556774861_image_1770556774861.jpg",
+"duration": "6:23",
+"category": "pop",
+"popular": true
+},
+{
+"id": 160,
+"title": "DJ Tak Tahu Malu",
+"artist": "DJ PAJAR SKY RIMEX",
+"album": "Lagu Happy Lagu Dj",
+"src": "https://raw.githubusercontent.com/SuikaRyp/Penyimpanan-Lagu/main/audio/1770650846678_DJ_TAPI_DI_BELAKANG_KAU_TIPU_TIPU_AKU_DJ_TAK_TAHU_MALU_REMIX_J.mp3",
+"img": "https://raw.githubusercontent.com/SuikaRyp/Penyimpanan-Lagu/main/images/1770651397587_image_1770651397587.jpg",
+"duration": "4:56",
+"category": "pop",
+"popular": true
+},
+{
+"id": 161,
+"title": "Secukupnya",
+"artist": "Hindia",
+"album": "Lagu Galau",
+"src": "https://raw.githubusercontent.com/SuikaRyp/Penyimpanan-Lagu/main/audio/1770651697624_Hindia_-_Secukupnya__Official_Lyric___Commentary_Video_.mp3",
+"img": "https://raw.githubusercontent.com/SuikaRyp/Penyimpanan-Lagu/main/images/1770651717473_image_1770651717473.jpg",
+"duration": "3:26",
+"category": "pop",
+"popular": false
+},
+{
+"id": 162,
+"title": "Dj Aku Dah Lupa Tak Ingat Lagi",
+"artist": "Mamang Fvndy Rmx",
+"album": "Lagu Dj",
+"src": "https://raw.githubusercontent.com/SuikaRyp/Penyimpanan-Lagu/main/audio/1771157458216_Maman_Fvndy_Rmx_DJ_AKU_DAH_LUPA_TAK_INGAT_LAGI_VIRAL_TIKTOK_SL.mp3",
+"img": "https://raw.githubusercontent.com/SuikaRyp/Penyimpanan-Lagu/main/images/1771157599942_image_1771157599942.jpg",
+"duration": "3:42",
+"category": "pop",
+"popular": true
+},
+{
+"id": 163,
+"title": "Tikus Tikus Kantor",
+"artist": "Pendhoza",
+"album": "Pop Kece",
+"src": "https://raw.githubusercontent.com/SuikaRyp/Penyimpanan-Lagu/main/audio/example_track_4.mp3",
+"img": "https://raw.githubusercontent.com/SuikaRyp/Penyimpanan-Lagu/main/images/example_image_4.jpg",
+"duration": "3:58",
+"category": "pop",
+"popular": true
+},
+{
+  "id": 164,
+  "title": "Anugrah Terindah",
+  "artist": "Tulus",
+  "album": "Kamar Break Beat",
+  "src": "https://raw.githubusercontent.com/SuikaRyp/Penyimpanan-Lagu/main/audio/1771157897347_Kamar_Breakbeat_-_DJ_ANUGRAH_TERINDAH_BREAKBEAT_TERBARU_2025.mp3",
+  "img": "https://raw.githubusercontent.com/SuikaRyp/Penyimpanan-Lagu/main/images/1771157985537_image_1771157985537.jpg",
+  "duration": "3:13",
+  "category": "pop",
+  "popular": true
+},
+{
+  "id": 165,
+  "title": "Bahagia Lagi",
+  "artist": "Piece Kota",
+  "album": "Lagu Galau",
+  "src": "https://raw.githubusercontent.com/SuikaRyp/Penyimpanan-Lagu/main/audio/1771160824810_Bahagia_Lagi_-_Piche_Kota.mp3",
+  "img": "https://raw.githubusercontent.com/SuikaRyp/Penyimpanan-Lagu/main/images/1771160960157_image_1771160960157.jpg",
+  "duration": "3:48",
+  "category": "pop",
+  "popular": true
+},
+{
+  "id": 166,
+  "title": "Message In Bottle",
+  "artist": "Tylor Swift",
+  "album": "Taylor Swift",
+  "src": "https://raw.githubusercontent.com/SuikaRyp/Penyimpanan-Lagu/main/audio/1771161478104_Taylor_Swift_Message_In_A_Bottle_Taylor_s_Version_From_The.mp3",
+  "img": "https://raw.githubusercontent.com/SuikaRyp/Penyimpanan-Lagu/main/images/1771161455394_image_1771161455394.jpg",
+  "duration": "3:46",
+  "category": "pop",
+  "popular": true
+},
+{
+  "id": 167,
+  "title": "Unconditionally",
+  "artist": "Katy Perry",
+  "album": "Lagu Galau",
+  "src": "https://raw.githubusercontent.com/SuikaRyp/Penyimpanan-Lagu/main/audio/1771290512583_Katy_Perry_-_Unconditionally__Official_.mp3",
+  "img": "https://raw.githubusercontent.com/SuikaRyp/Penyimpanan-Lagu/main/images/1771290633399_image_1771290633399.jpg",
+  "duration": "3:57",
+  "category": "pop",
+  "popular": true
+},
+{
+  "id": 168,
+  "title": "Rewrite The Stars",
+  "artist": "JamesArthur,Anne Marie",
+  "album": "JamesArthur,Anne Marie",
+  "src": "https://raw.githubusercontent.com/SuikaRyp/Penyimpanan-Lagu/main/audio/1771290992773_James_Arthur__Anne_Marie_Rewrite_the_Stars_Karaoke_Version.mp3",
+  "img": "https://raw.githubusercontent.com/SuikaRyp/Penyimpanan-Lagu/main/images/1771291123695_image_1771291123695.jpg",
+  "duration": "3:54",
+  "category": "pop",
+  "popular": true
+},
+{
+  "id": 169,
+  "title": "Heate X Eyes Blue",
+  "artist": "Shadow Music",
+  "album": "Shadow Music",
+  "src": "https://raw.githubusercontent.com/SuikaRyp/Penyimpanan-Lagu/main/audio/1771535195886_Heather_x_Eyes_Blue__Lyrics___Untrusted___Pretence_Cover__1771535195.mp3",
+  "img": "https://raw.githubusercontent.com/SuikaRyp/Penyimpanan-Lagu/main/images/1771535151381_image_1771535151.jpg",
+  "duration": "2:56",
+  "category": "pop",
+  "popular": true
+},
+{
+  "id": 170,
+  "title": "Baon Cikadap",
+  "artist": "Dunia Music Ku",
+  "album": "Dunia Music Ku",
+  "src": "https://raw.githubusercontent.com/SuikaRyp/Penyimpanan-Lagu/main/audio/1771328006641_DUNIA_MUSIC_KU_BAON_CIKADAP_LAGU_JOROK_LIRIK__baoncikadap__dun.mp3",
+  "img": "https://raw.githubusercontent.com/SuikaRyp/Penyimpanan-Lagu/main/images/1771328053954_image_1771328053954.jpg",
+  "duration": "4:00",
+  "category": "pop",
+  "popular": true
+},
+{
+  "id": 171,
+  "title": "Denok",
+  "artist": "Cindi Cintiya",
+  "album": "Cindi Cintiya",
+  "src": "https://raw.githubusercontent.com/SuikaRyp/Penyimpanan-Lagu/main/audio/1771332199584_DENOK_-_Cindi_Cintya_feat_Sadewok__Official_Music_Video_.mp3",
+  "img": "https://raw.githubusercontent.com/SuikaRyp/Penyimpanan-Lagu/main/images/1771332481261_image_1771332481261.jpg",
+  "duration": "5:24",
+  "category": "pop",
+  "popular": true
+},
+{
+  "id": 172,
+  "title": "for the rest of my life",
+  "artist": "Maher Zain",
+  "album": "Maher Zain",
+  "src": "https://raw.githubusercontent.com/SuikaRyp/Penyimpanan-Lagu/main/audio/1771380113398_Maher_Zain_-_For_The_Rest_Of_My_Life.mp3",
+  "img": "https://raw.githubusercontent.com/SuikaRyp/Penyimpanan-Lagu/main/images/1771380152424_image_1771380152424.jpg",
+  "duration": "4:48",
+  "category": "pop",
+  "popular": true
+},
+{
+  "id": 173,
+  "title": "cincin",
+  "artist": "Hindia",
+  "album": "Lagu Galau Hindia",
+  "src": "https://raw.githubusercontent.com/SuikaRyp/Penyimpanan-Lagu/main/audio/1771380668840_Hindia_-_Cincin__Official_Lyric_Video_.mp3",
+  "img": "https://raw.githubusercontent.com/SuikaRyp/Penyimpanan-Lagu/main/images/1771380718239_image_1771380718239.jpg",
+  "duration": "4:27",
+  "category": "pop",
+  "popular": true
+},
+{
+  "id": 174,
+  "title": "Gak Pake Lama (Dj Buncit Remix)",
+  "artist": "Manda Cello",
+  "album": "Manda Cello Lagu Happy",
+  "src": "https://raw.githubusercontent.com/SuikaRyp/Penyimpanan-Lagu/main/audio/1771381726780_DJ_Buncit_-_Topic_-_Gak_Pake_Lama__DJ_Buncit_Remix_.mp3",
+  "img": "https://raw.githubusercontent.com/SuikaRyp/Penyimpanan-Lagu/main/images/1771381867849_image_1771381867849.jpg",
+  "duration": "3:25",
+  "category": "pop",
+  "popular": true
+},
+{
+  "id": 175,
+  "title": "Cari Berkah",
+  "artist": "Wali Band",
+  "album": "Wali Band",
+  "src": "https://raw.githubusercontent.com/SuikaRyp/Penyimpanan-Lagu/main/audio/1771452970506_Cari_Berkah__Official_Music_Video_NAGASWARA___music_1771452970.mp3",
+  "img": "https://raw.githubusercontent.com/SuikaRyp/Penyimpanan-Lagu/main/images/1771480346205_image_1771480346.jpg",
+  "duration": "4:25",
+  "category": "pop",
+  "popular": true
+},
+{
+  "id": 176,
+  "title": "Dj Aku Suges",
+  "artist": "WAN VENOX",
+  "album": "WAN VENOX",
+  "src": "https://raw.githubusercontent.com/SuikaRyp/Penyimpanan-Lagu/main/audio/1771535954944_Lagu_Party___DJ_AKU_SUGES__WAN_VENOX_REMIX__1771535954.mp3",
+  "img": "https://raw.githubusercontent.com/SuikaRyp/Penyimpanan-Lagu/main/images/1771536447492_image_1771536447.jpg",
+  "duration": "5:13",
+  "category": "pop",
+  "popular": true
+},
+{
+  "id": 177,
+  "title": "Kurang Gizi",
+  "artist": "Via Valen",
+  "album": "Via Valen",
+  "src": "https://raw.githubusercontent.com/SuikaRyp/Penyimpanan-Lagu/main/audio/1771536855478_VIA_VALLEN__1771536855.mp3",
+  "img": "https://raw.githubusercontent.com/SuikaRyp/Penyimpanan-Lagu/main/images/1771536845035_image_1771536845.jpg",
+  "duration": "4:48",
+  "category": "pop",
+  "popular": true
+},
+{
+  "id": 178,
+  "title": "Ramadhan Tiba",
+  "artist": "Opick",
+  "album": "Opick",
+  "src": "https://raw.githubusercontent.com/SuikaRyp/Penyimpanan-Lagu/main/audio/1771537351788_Ramadhan_Tiba__1771537351.mp3",
+  "img": "https://raw.githubusercontent.com/SuikaRyp/Penyimpanan-Lagu/main/images/1771537388497_image_1771537388.jpg",
+  "duration": "3:39",
+  "category": "pop",
+  "popular": true
+},
+{
+  "id": 179,
+  "title": "Opening Ultraman Dyna",
+  "artist": "Ultra Lyric",
+  "album": "Ultra Lyric",
+  "src": "https://raw.githubusercontent.com/SuikaRyp/Penyimpanan-Lagu/main/audio/1771538218370_Ultraman_Dyna_opening__Lyrics__1771538218.mp3",
+  "img": "https://raw.githubusercontent.com/SuikaRyp/Penyimpanan-Lagu/main/images/1771538285535_image_1771538285.jpg",
+  "duration": "4:13",
+  "category": "pop",
+  "popular": true
+},
+{
+  "id": 180,
+  "title": "Fire & Water ",
+  "artist": "Faizal Tahir",
+  "album": "Faizal Tahir",
+  "src": "https://raw.githubusercontent.com/SuikaRyp/Penyimpanan-Lagu/main/audio/1771538734819_Fire___Water__OST__BoBoiBoy_Movie_2___1771538734.mp3",
+  "img": "https://raw.githubusercontent.com/SuikaRyp/Penyimpanan-Lagu/main/images/1771538742227_image_1771538742.jpg",
+  "duration": "3:13",
+  "category": "pop",
+  "popular": true
+},
+{
+  "id": 181,
+  "title": "Dunia Baru",
+  "artist": "Boboiboy Galaxy",
+  "album": "Boboiboy Galaxy",
+  "src": "https://raw.githubusercontent.com/SuikaRyp/Penyimpanan-Lagu/main/audio/1771538891545_Dunia_Baru__1771538891.mp3",
+  "img": "https://raw.githubusercontent.com/SuikaRyp/Penyimpanan-Lagu/main/images/1771538929858_image_1771538929.jpg",
+  "duration": "3:20",
+  "category": "pop",
+  "popular": true
+},
+{
+  "id": 182,
+  "title": "Kesepian",
+  "artist": "Viera",
+  "album": "Viera",
+  "src": "https://raw.githubusercontent.com/SuikaRyp/Penyimpanan-Lagu/main/audio/1771539083220_Kesepian__Official_Music_Video__1771539083.mp3",
+  "img": "https://raw.githubusercontent.com/SuikaRyp/Penyimpanan-Lagu/main/images/1771539163308_image_1771539163.jpg",
+  "duration": "4:23",
+  "category": "pop",
+  "popular": true
+},
+{
+  "id": 183,
+  "title": "Kapan Terakhir Kali Kamu Dapat Tertidur Tenang",
+  "artist": "Tulus",
+  "album": "Manusia",
+  "src": "https://raw.githubusercontent.com/SuikaRyp/Penyimpanan-Lagu/main/audio/example_track_5.mp3",
+  "img": "https://raw.githubusercontent.com/SuikaRyp/Penyimpanan-Lagu/main/images/example_image_5.jpg",
+  "duration": "5:20",
+  "category": "pop",
+  "popular": true
+}
+        ];
+
+        // ========== STATE VARIABLES ==========
+        const audio = new Audio();
+        let currentSongIndex = 0;
+        let isPlaying = false;
+        let isShuffled = false;
+        let isRepeated = false;
+        let queue = [...musicLibrary];
+        let recentPlays = [];
+        let listenHistory = [];
+        let popularSongs = [];
+        let recommendedSongs = [];
+        let searchResults = [];
+        let startListeningSongs = [];
+        let currentSearchQuery = ''; // Track current search query
+
+        // ========== DOM ELEMENTS ==========
+        const recentCarousel = document.getElementById('recentCarousel');
+        const popularCarousel = document.getElementById('popularCarousel');
+        const recommendedCarousel = document.getElementById('recommendedCarousel');
+        const startListeningList = document.getElementById('startListeningList');
+        const searchResultsCarousel = document.getElementById('searchResultsCarousel');
+        const homeSection = document.getElementById('homeSection');
+        const searchResultsSection = document.getElementById('searchResultsSection');
+        const historySection = document.getElementById('historySection');
+        const historyContent = document.getElementById('historyContent');
+        const searchBox = document.getElementById('searchBox');
+        const clearSearch = document.getElementById('clearSearch');
+        const sidebar = document.getElementById('sidebar');
+        const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+        const resultsInfo = document.getElementById('resultsInfo');
+        const searchQuery = document.getElementById('searchQuery');
+        const splashScreen = document.getElementById('splashScreen');
+        const appContainer = document.getElementById('appContainer');
+
+        // ========== SPLASH SCREEN FUNCTION ==========
+        function hideSplashScreen() {
+            setTimeout(() => {
+                splashScreen.classList.add('fade-out');
+                setTimeout(() => {
+                    splashScreen.style.display = 'none';
+                    // Ensure app is visible
+                    appContainer.style.opacity = '1';
+                }, 800);
+            }, 2500);
+        }
+
+        // ========== INITIALIZATION ==========
+        function initApp() {
+            // Set initial songs
+            popularSongs = musicLibrary.filter(song => song.popular);
+            recommendedSongs = [...musicLibrary].sort(() => 0.5 - Math.random()).slice(0, 8);
+            recentPlays = [...musicLibrary].sort(() => 0.5 - Math.random()).slice(0, 6);
+            
+            // Set 12 lagu acak untuk vertical list "Mulai Mendengarkan"
+            startListeningSongs = [...musicLibrary].sort(() => 0.5 - Math.random()).slice(0, 12);
+            
+            // Display carousels
+            displayCarouselSongs(recentPlays, recentCarousel, "recent");
+            displayCarouselSongs(popularSongs, popularCarousel, "popular");
+            displayCarouselSongs(recommendedSongs, recommendedCarousel, "recommended");
+            
+            // Display vertical list
+            displayVerticalList(startListeningSongs, startListeningList);
+            
+            // Load first song
+            loadSong(0);
+            
+            // Setup event listeners
+            setupEventListeners();
+            
+            // Set initial volume
+            audio.volume = 0.7;
+            document.getElementById('volumeProgress').style.width = '70%';
+            
+            // Set initial listen history
+            listenHistory = [...musicLibrary].slice(0, 3);
+            
+            // Initialize empty search results carousel
+            clearSearchResults();
+
+            // Hide splash screen after initialization
+            hideSplashScreen();
+        }
+
+        // ========== CAROUSEL DISPLAY ==========
+        function displayCarouselSongs(songs, container, type) {
+            if (!container) return;
+            
+            container.innerHTML = '';
+            
+            songs.forEach((song, index) => {
+                const musicCard = document.createElement('div');
+                musicCard.className = 'music-card';
+                if (song.id === musicLibrary[currentSongIndex]?.id) {
+                    musicCard.classList.add('active');
+                }
+                
+                musicCard.innerHTML = `
+                    <div class="card-img-container">
+                        <img src="${song.img}" alt="${song.title}" class="card-img">
+                    </div>
+                    <div class="card-content">
+                        <h3 class="card-title">${song.title}</h3>
+                        <p class="card-artist">${song.artist}</p>
+                        <div class="card-footer">
+                            <span class="card-duration">${song.duration}</span>
+                            <button class="play-btn" data-id="${song.id}" data-type="${type}">
+                                <i class="fas fa-play"></i>
+                            </button>
+                        </div>
+                    </div>
+                `;
+                
+                // Play button event
+                const playBtn = musicCard.querySelector('.play-btn');
+                playBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const songId = parseInt(playBtn.getAttribute('data-id'));
+                    const songIndex = musicLibrary.findIndex(s => s.id === songId);
+                    playSongFromIndex(songIndex);
+                });
+                
+                container.appendChild(musicCard);
+            });
+        }
+
+        // ========== VERTICAL LIST DISPLAY (SPOTIFY STYLE) ==========
+        function displayVerticalList(songs, container) {
+            if (!container) return;
+            
+            container.innerHTML = '';
+            
+            songs.forEach((song) => {
+                const listItem = document.createElement('div');
+                listItem.className = 'song-list-item';
+                if (song.id === musicLibrary[currentSongIndex]?.id) {
+                    listItem.classList.add('active');
+                }
+                
+                listItem.innerHTML = `
+                    <img src="${song.img}" alt="${song.title}" class="list-item-img">
+                    <div class="list-item-info">
+                        <span class="list-item-title">${song.title}</span>
+                        <span class="list-item-artist">${song.artist}</span>
+                    </div>
+                    <div class="list-item-menu">
+                        <i class="fas fa-ellipsis-h"></i>
+                    </div>
+                `;
+                
+                // Play song when clicking on the item (except menu button)
+                listItem.addEventListener('click', (e) => {
+                    // Cek apakah yang diklik adalah menu atau bukan
+                    if (!e.target.closest('.list-item-menu')) {
+                        const songIndex = musicLibrary.findIndex(s => s.id === song.id);
+                        playSongFromIndex(songIndex);
+                        
+                        // Update active class
+                        document.querySelectorAll('.song-list-item').forEach(item => {
+                            item.classList.remove('active');
+                        });
+                        listItem.classList.add('active');
+                    }
+                });
+                
+                // Menu button click event
+                const menuBtn = listItem.querySelector('.list-item-menu');
+                menuBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    // Di sini bisa ditambahkan fungsi untuk membuka menu opsi
+                    alert(`Menu untuk lagu: ${song.title} - ${song.artist}`);
+                });
+                
+                container.appendChild(listItem);
+            });
+        }
+
+        // ========== CLEAR SEARCH RESULTS ==========
+        function clearSearchResults() {
+            // Reset search results array
+            searchResults = [];
+            
+            // Clear carousel HTML
+            if (searchResultsCarousel) {
+                searchResultsCarousel.innerHTML = '';
+            }
+            
+            // Reset search info
+            if (searchQuery) {
+                searchQuery.textContent = '';
+            }
+            
+            if (resultsInfo) {
+                resultsInfo.innerHTML = 'Menampilkan hasil untuk "<strong></strong>"';
+            }
+            
+            // Hide search section
+            if (searchResultsSection) {
+                searchResultsSection.classList.remove('active');
+            }
+            
+            // Show home section if no active page
+            if (homeSection && historySection) {
+                const activePage = document.querySelector('.nav-links a.active')?.getAttribute('data-page');
+                if (!activePage || activePage === 'home') {
+                    homeSection.style.display = 'block';
+                }
+            }
+        }
+
+        // ========== SEARCH FUNCTION ==========
+        function handleSearch() {
+            const query = searchBox.value.trim().toLowerCase();
+            
+            // Reset dan bersihkan hasil pencarian sebelumnya
+            clearSearchResults();
+            
+            // Jika query kosong
+            if (query === '') {
+                clearSearch.style.display = 'none';
+                homeSection.style.display = 'block';
+                historySection.style.display = 'none';
+                return;
+            }
+            
+            // Tampilkan tombol clear
+            clearSearch.style.display = 'flex';
+            
+            // Update current search query
+            currentSearchQuery = query;
+            
+            // Sembunyikan section lain
+            homeSection.style.display = 'none';
+            historySection.style.display = 'none';
+            
+            // Aktifkan section hasil pencarian
+            searchResultsSection.classList.add('active');
+            
+            // Update info pencarian
+            searchQuery.textContent = query;
+            
+            // Filter lagu berdasarkan query
+            searchResults = musicLibrary.filter(song => 
+                song.title.toLowerCase().includes(query) ||
+                song.artist.toLowerCase().includes(query) ||
+                song.album.toLowerCase().includes(query)
+            );
+            
+            // Update info hasil pencarian
+            resultsInfo.innerHTML = `Menampilkan <strong>${searchResults.length}</strong> hasil untuk "<strong>${query}</strong>"`;
+            
+            // Tampilkan hasil pencarian
+            if (searchResults.length > 0) {
+                displayCarouselSongs(searchResults, searchResultsCarousel, "search");
+            } else {
+                // Tampilkan pesan tidak ada hasil
+                searchResultsCarousel.innerHTML = `
+                    <div style="width: 100%; text-align: center; padding: 50px 0; color: var(--gray);">
+                        <i class="fas fa-search" style="font-size: 3rem; margin-bottom: 20px; opacity: 0.5;"></i>
+                        <h3 style="margin-bottom: 10px;">Tidak ada hasil ditemukan</h3>
+                        <p>Coba gunakan kata kunci lain</p>
+                    </div>
+                `;
+            }
+        }
+
+        // ========== PLAYER FUNCTIONS ==========
+        function loadSong(index) {
+            const song = musicLibrary[index];
+            currentSongIndex = index;
+            
+            audio.src = song.src;
+            
+            document.getElementById('nowPlayingImg').src = song.img;
+            document.getElementById('nowPlayingTitle').textContent = song.title;
+            document.getElementById('nowPlayingArtist').textContent = song.artist;
+            
+            if (isPlaying) {
+                audio.play();
+            }
+            
+            // Update active state di semua container
+            updateActiveStates(song.id);
+        }
+
+        function updateActiveStates(songId) {
+            // Update carousel cards
+            document.querySelectorAll('.music-card').forEach(card => {
+                const playBtn = card.querySelector('.play-btn');
+                if (playBtn) {
+                    const cardId = parseInt(playBtn.getAttribute('data-id'));
+                    if (cardId === songId) {
+                        card.classList.add('active');
+                    } else {
+                        card.classList.remove('active');
+                    }
+                }
+            });
+            
+            // Update vertical list items
+            document.querySelectorAll('.song-list-item').forEach(item => {
+                const itemId = musicLibrary.find(s => 
+                    s.title === item.querySelector('.list-item-title')?.textContent &&
+                    s.artist === item.querySelector('.list-item-artist')?.textContent
+                )?.id;
+                
+                if (itemId === songId) {
+                    item.classList.add('active');
+                } else {
+                    item.classList.remove('active');
+                }
+            });
+        }
+
+        function playSongFromIndex(index) {
+            currentSongIndex = index;
+            loadSong(index);
+            
+            if (!isPlaying) {
+                togglePlayPause();
+            } else {
+                audio.play();
+            }
+            
+            // Add to history
+            const song = musicLibrary[index];
+            if (!listenHistory.some(item => item.id === song.id)) {
+                listenHistory.unshift(song);
+                if (listenHistory.length > 10) listenHistory.pop();
+            }
+        }
+
+        function togglePlayPause() {
+            if (isPlaying) {
+                audio.pause();
+                isPlaying = false;
+                document.getElementById('playPauseIcon').className = 'fas fa-play';
+                document.getElementById('fullscreenPlayIcon').className = 'fas fa-play';
+            } else {
+                audio.play();
+                isPlaying = true;
+                document.getElementById('playPauseIcon').className = 'fas fa-pause';
+                document.getElementById('fullscreenPlayIcon').className = 'fas fa-pause';
+            }
+        }
+
+        // ========== NAVIGATION ==========
+        function navigateToPage(page) {
+            homeSection.style.display = 'none';
+            historySection.style.display = 'none';
+            searchResultsSection.classList.remove('active');
+            
+            // Clear search when navigating away
+            if (page !== 'discover') {
+                searchBox.value = '';
+                clearSearch.style.display = 'none';
+                clearSearchResults();
+            }
+            
+            if (page === 'home') {
+                homeSection.style.display = 'block';
+            } else if (page === 'history') {
+                historySection.style.display = 'block';
+                displayHistory(listenHistory);
+            } else if (page === 'discover') {
+                searchResultsSection.classList.add('active');
+                displayCarouselSongs(musicLibrary, searchResultsCarousel, "discover");
+                searchQuery.textContent = 'Semua Lagu';
+                resultsInfo.innerHTML = `Menampilkan <strong>${musicLibrary.length}</strong> lagu`;
+            }
+            
+            // Close mobile sidebar
+            if (window.innerWidth <= 1200) {
+                sidebar.classList.remove('active');
+            }
+        }
+
+        // ========== HISTORY DISPLAY ==========
+        function displayHistory(history) {
+            historyContent.innerHTML = '';
+            
+            if (history.length === 0) {
+                historyContent.innerHTML = `
+                    <div class="no-history">
+                        <i class="fas fa-history" style="font-size: 3rem; margin-bottom: 20px; opacity: 0.5;"></i>
+                        <h3 style="margin-bottom: 10px;">Tidak ada riwayat</h3>
+                        <p>Mulai dengarkan musik untuk melihat riwayat di sini</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            history.slice(0, 12).forEach(item => {
+                const card = document.createElement('div');
+                card.className = 'music-card';
+                card.innerHTML = `
+                    <div class="card-img-container">
+                        <img src="${item.img}" alt="${item.title}" class="card-img">
+                    </div>
+                    <div class="card-content">
+                        <h3 class="card-title">${item.title}</h3>
+                        <p class="card-artist">${item.artist}</p>
+                        <div class="card-footer">
+                            <span class="card-duration">${item.duration}</span>
+                            <button class="play-btn" data-id="${item.id}">
+                                <i class="fas fa-play"></i>
+                            </button>
+                        </div>
+                    </div>
+                `;
+                
+                const playBtn = card.querySelector('.play-btn');
+                playBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const songId = parseInt(playBtn.getAttribute('data-id'));
+                    const songIndex = musicLibrary.findIndex(s => s.id === songId);
+                    playSongFromIndex(songIndex);
+                });
+                
+                historyContent.appendChild(card);
+            });
+        }
+
+        // ========== EVENT LISTENERS ==========
+        function setupEventListeners() {
+            // Search with debounce
+            let searchTimeout;
+            searchBox.addEventListener('input', () => {
+                clearTimeout(searchTimeout);
+                searchTimeout = setTimeout(() => {
+                    handleSearch();
+                }, 300); // Debounce 300ms
+            });
+            
+            // Clear search button
+            clearSearch.addEventListener('click', () => {
+                searchBox.value = '';
+                clearSearch.style.display = 'none';
+                clearSearchResults();
+                homeSection.style.display = 'block';
+                historySection.style.display = 'none';
+            });
+            
+            // Search on enter key
+            searchBox.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    clearTimeout(searchTimeout);
+                    handleSearch();
+                }
+            });
+            
+            // Navigation
+            document.querySelectorAll('.nav-links a[data-page]').forEach(link => {
+                link.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const page = link.getAttribute('data-page');
+                    
+                    document.querySelectorAll('.nav-links a').forEach(a => a.classList.remove('active'));
+                    link.classList.add('active');
+                    
+                    navigateToPage(page);
+                });
+            });
+            
+            // Player controls
+            document.getElementById('playPauseBtn').addEventListener('click', togglePlayPause);
+            
+            document.getElementById('nextBtn').addEventListener('click', () => {
+                let nextIndex = currentSongIndex + 1;
+                if (nextIndex >= musicLibrary.length) nextIndex = 0;
+                playSongFromIndex(nextIndex);
+            });
+            
+            document.getElementById('prevBtn').addEventListener('click', () => {
+                let prevIndex = currentSongIndex - 1;
+                if (prevIndex < 0) prevIndex = musicLibrary.length - 1;
+                playSongFromIndex(prevIndex);
+            });
+            
+            // Progress bar
+            const progressBar = document.getElementById('progressBar');
+            progressBar.addEventListener('click', (e) => {
+                const width = progressBar.clientWidth;
+                const clickX = e.offsetX;
+                const duration = audio.duration;
+                audio.currentTime = (clickX / width) * duration;
+            });
+            
+            audio.addEventListener('timeupdate', () => {
+                const { currentTime, duration } = audio;
+                if (duration) {
+                    const progressPercent = (currentTime / duration) * 100;
+                    document.getElementById('progress').style.width = `${progressPercent}%`;
+                    document.getElementById('currentTime').textContent = formatTime(currentTime);
+                    document.getElementById('duration').textContent = formatTime(duration);
+                    
+                    // Update fullscreen
+                    document.getElementById('fullscreenProgress').style.width = `${progressPercent}%`;
+                    document.getElementById('fullscreenCurrentTime').textContent = formatTime(currentTime);
+                    document.getElementById('fullscreenDuration').textContent = formatTime(duration);
+                }
+            });
+            
+            audio.addEventListener('ended', () => {
+                if (isRepeated) {
+                    playSongFromIndex(currentSongIndex);
+                } else {
+                    document.getElementById('nextBtn').click();
+                }
+            });
+            
+            // Volume
+            const volumeSlider = document.getElementById('volumeSlider');
+            volumeSlider.addEventListener('click', (e) => {
+                const width = volumeSlider.clientWidth;
+                const clickX = e.offsetX;
+                const volume = clickX / width;
+                audio.volume = volume;
+                document.getElementById('volumeProgress').style.width = `${volume * 100}%`;
+                
+                // Update fullscreen volume
+                document.getElementById('fullscreenVolumeProgress').style.width = `${volume * 100}%`;
+            });
+            
+            // Mobile menu
+            mobileMenuBtn.addEventListener('click', () => {
+                sidebar.classList.toggle('active');
+            });
+            
+            // Close sidebar when clicking outside on mobile
+            document.addEventListener('click', (e) => {
+                if (window.innerWidth <= 1200) {
+                    if (!sidebar.contains(e.target) && !mobileMenuBtn.contains(e.target)) {
+                        sidebar.classList.remove('active');
+                    }
+                }
+            });
+            
+            // Queue
+            document.getElementById('queueBtn').addEventListener('click', () => {
+                document.getElementById('queueSidebar').classList.add('active');
+            });
+            
+            document.getElementById('closeQueue').addEventListener('click', () => {
+                document.getElementById('queueSidebar').classList.remove('active');
+            });
+            
+            // Fullscreen
+            document.getElementById('nowPlayingImg').addEventListener('dblclick', () => {
+                document.getElementById('fullscreenPlayer').classList.add('active');
+                document.body.style.overflow = 'hidden';
+                
+                // Update fullscreen info
+                const song = musicLibrary[currentSongIndex];
+                document.getElementById('fullscreenAlbumArt').src = song.img;
+                document.getElementById('fullscreenSongTitle').textContent = song.title;
+                document.getElementById('fullscreenSongArtist').textContent = song.artist;
+                document.getElementById('fullscreenSongAlbum').textContent = song.album;
+            });
+            
+            document.getElementById('closeFullscreen').addEventListener('click', () => {
+                document.getElementById('fullscreenPlayer').classList.remove('active');
+                document.body.style.overflow = '';
+            });
+            
+            // Fullscreen controls
+            document.getElementById('fullscreenPlayBtn').addEventListener('click', togglePlayPause);
+            document.getElementById('fullscreenPrevBtn').addEventListener('click', () => {
+                document.getElementById('prevBtn').click();
+            });
+            document.getElementById('fullscreenNextBtn').addEventListener('click', () => {
+                document.getElementById('nextBtn').click();
+            });
+            
+            // Account menu
+            document.getElementById('userProfile').addEventListener('click', (e) => {
+                e.stopPropagation();
+                document.getElementById('accountMenu').classList.toggle('active');
+            });
+            
+            document.addEventListener('click', (e) => {
+                const menu = document.getElementById('accountMenu');
+                const profile = document.getElementById('userProfile');
+                if (!profile.contains(e.target) && !menu.contains(e.target)) {
+                    menu.classList.remove('active');
+                }
+            });
+            
+            // Explore button
+            document.getElementById('exploreBtn').addEventListener('click', () => {
+                playSongFromIndex(0);
+            });
+            
+            // View all buttons
+            document.getElementById('viewAllRecent').addEventListener('click', (e) => {
+                e.preventDefault();
+                navigateToPage('history');
+            });
+            
+            document.getElementById('viewAllPopular').addEventListener('click', (e) => {
+                e.preventDefault();
+                navigateToPage('discover');
+            });
+            
+            document.getElementById('viewAllRecommended').addEventListener('click', (e) => {
+                e.preventDefault();
+                navigateToPage('discover');
+            });
+            
+            document.getElementById('viewAllStartListening').addEventListener('click', (e) => {
+                e.preventDefault();
+                navigateToPage('discover');
+            });
+            
+            // Clear history
+            document.getElementById('clearHistoryBtn').addEventListener('click', () => {
+                listenHistory = [];
+                displayHistory(listenHistory);
+            });
+            
+            // History filter buttons
+            document.querySelectorAll('.history-btn[data-history-type]').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    document.querySelectorAll('.history-btn').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    
+                    const type = btn.getAttribute('data-history-type');
+                    if (type === 'all') {
+                        displayHistory(listenHistory);
+                    } else {
+                        // For demo, just show recent songs
+                        const filtered = listenHistory.slice(0, 3);
+                        displayHistory(filtered);
+                    }
+                });
+            });
+            
+            // Shuffle button
+            document.getElementById('shuffleBtn').addEventListener('click', () => {
+                isShuffled = !isShuffled;
+                document.getElementById('shuffleBtn').style.color = isShuffled ? 'var(--primary)' : 'var(--light)';
+            });
+            
+            // Repeat button
+            document.getElementById('repeatBtn').addEventListener('click', () => {
+                isRepeated = !isRepeated;
+                document.getElementById('repeatBtn').style.color = isRepeated ? 'var(--primary)' : 'var(--light)';
+            });
+            
+            // Theme toggle (simple implementation)
+            document.getElementById('themeToggle').addEventListener('click', () => {
+                alert('Fitur theme toggle akan segera hadir!');
+            });
+            
+            // Notification button
+            document.getElementById('notificationBtn').addEventListener('click', () => {
+                alert('Tidak ada notifikasi baru');
+            });
+            
+            // Logout button
+            document.getElementById('logoutBtn').addEventListener('click', () => {
+                alert('Anda telah logout');
+                document.getElementById('accountMenu').classList.remove('active');
+            });
+        }
+
+        // ========== UTILITY FUNCTIONS ==========
+        function formatTime(seconds) {
+            if (isNaN(seconds)) return '0:00';
+            const mins = Math.floor(seconds / 60);
+            const secs = Math.floor(seconds % 60);
+            return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+        }
+
+        // ========== START APP ==========
+        window.addEventListener('DOMContentLoaded', initApp);
+    </script>
+</body>
+</html>
