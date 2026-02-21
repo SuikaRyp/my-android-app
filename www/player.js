@@ -1,19 +1,13 @@
-/**
- * player.js - Music Controls Plugin Handler for Suika Player
- * Menangani integrasi dengan cordova-plugin-music-controls2
- */
 
-// ========== MUSIC CONTROLS PLUGIN ==========
+
+ 
 (function() {
     'use strict';
 
-    // Reference ke audio element dari window (di-set oleh index.html)
+ 
     const audio = window.audio || null;
     
-    /**
-     * Inisialisasi Music Controls
-     * Dipanggil saat Cordova ready
-     */
+
     window.initMusicControls = function() {
         // Cek apakah plugin tersedia
         if (typeof MusicControls === 'undefined') {
@@ -69,11 +63,7 @@
         return true;
     };
 
-    /**
-     * Update tampilan notifikasi
-     * @param {boolean} isPlaying - Status play/pause
-     * @param {Object} song - Data lagu (title, artist, album, img, duration)
-     */
+    
     window.updateMusicControls = function(isPlaying, song) {
         if (typeof MusicControls === 'undefined') {
             console.log('⚠️ MusicControls not available, skipping update');
@@ -98,25 +88,25 @@
                 }
             }
             
-            // Buat notifikasi
+            
             MusicControls.create({
-                // Informasi lagu
+                
                 track       : song.title || 'Unknown Track',
                 artist      : song.artist || 'Unknown Artist',
                 album       : song.album || 'Unknown Album',
                 cover       : song.img || '', // URL gambar
                 
-                // Status
+                
                 isPlaying   : isPlaying,
                 duration    : durationInSeconds,
                 elapsed     : elapsed,
                 
-                // Tampilan tombol
-                dismissable : false,      // Tidak bisa di-dismiss (kecuali pause)
-                hasPrev     : true,       // Tombol previous
-                hasNext     : true,       // Tombol next
-                hasClose    : true,       // Tombol close
-                hasPlayPause: true,       // Tombol play/pause
+                
+                dismissable : false,     
+                hasPrev     : true,       
+                hasNext     : true,       
+                hasClose    : true,       
+                hasPlayPause: true,       
                 
                 // Teks di notifikasi (Android)
                 ticker      : `Now playing: ${song.title}`,
@@ -151,10 +141,7 @@
         }
     };
 
-    /**
-     * Update status play/pause saja (tanpa ganti lagu)
-     * @param {boolean} isPlaying 
-     */
+ 
     window.updatePlaybackStatus = function(isPlaying) {
         if (typeof MusicControls === 'undefined') return;
         
@@ -166,10 +153,7 @@
         }
     };
 
-    /**
-     * Update elapsed time (bisa dipanggil dari timer)
-     * @param {number} elapsed - Waktu dalam detik
-     */
+   
     window.updateElapsedTime = function(elapsed) {
         if (typeof MusicControls === 'undefined') return;
         
@@ -182,10 +166,10 @@
         }
     };
 
-    // Auto-init saat Cordova ready (fallback)
+    
     document.addEventListener('deviceready', function() {
         console.log('📱 Cordova is ready (from player.js)');
-        // Init akan dipanggil juga dari index.html
+        
     }, false);
 
     console.log('🎵 player.js loaded');
