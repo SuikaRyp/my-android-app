@@ -2,18 +2,29 @@
   "name": "my-android-app",
   "displayName": "Fire Listen",
   "version": "1.0.0",
-  "description": "Built with APK Builder",
+  "description": "Music Player dengan notifikasi Android - Built with Cordova",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"test\""
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "cordova build android",
+    "run": "cordova run android"
   },
   "keywords": [
     "cordova",
-    "android"
+    "android",
+    "music",
+    "player",
+    "media-controls",
+    "notification"
   ],
   "author": "APK Builder",
   "license": "MIT",
-  "devDependencies": {},
+  "devDependencies": {
+    "cordova-android": "^12.0.1"
+  },
+  "dependencies": {
+    "cordova-plugin-music-controls2": "^3.0.3"
+  },
   "cordova": {
     "platforms": [
       "android"
