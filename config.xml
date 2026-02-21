@@ -1,24 +1,48 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<widget id="com.firelisten.myapp" version="1.0.0" android-versionCode="1" xmlns="http://www.w3.org/ns/widgets" xmlns:cdv="http://cordova.apache.org/ns/1.0">
+<widget id="com.firelisten.myapp" version="1.0.0" android-versionCode="1"
+xmlns="http://www.w3.org/ns/widgets"
+xmlns:cdv="http://cordova.apache.org/ns/1.0">
+
   <name>Fire Listen</name>
   <description>Built with APK Builder</description>
   <author>APK Builder User</author>
+
   <content src="index.html" />
   <access origin="*" />
+
+  <!-- IMPORTANT -->
+  <plugin name="cordova-plugin-music-controls2" spec="^3.0.3" />
+
   <allow-intent href="http://*/*" />
   <allow-intent href="https://*/*" />
+
   <preference name="DisallowOverscroll" value="true" />
   <preference name="android-minSdkVersion" value="24" />
   <preference name="android-targetSdkVersion" value="34" />
   <preference name="Fullscreen" value="false" />
   <preference name="Orientation" value="default" />
+
   <platform name="android">
+
+    <!-- Android 13+ notification permission -->
+    <config-file target="AndroidManifest.xml" parent="/manifest">
+      <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
+    </config-file>
+
+    <!-- Biar dianggap media player -->
+    <config-file target="AndroidManifest.xml" parent="/manifest/application">
+      <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
+    </config-file>
+
     <allow-intent href="market:*" />
+
     <icon density="ldpi" src="res/icon.png" />
     <icon density="mdpi" src="res/icon.png" />
     <icon density="hdpi" src="res/icon.png" />
     <icon density="xhdpi" src="res/icon.png" />
     <icon density="xxhdpi" src="res/icon.png" />
     <icon density="xxxhdpi" src="res/icon.png" />
+
   </platform>
+
 </widget>
