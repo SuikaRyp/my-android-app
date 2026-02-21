@@ -4,6 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Suika Player</title>
+    
+    <!-- ===== CORDOVA & PLUGIN SCRIPTS ===== -->
+    <script src="cordova.js"></script>
+    <script src="player.js"></script>
+    
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
@@ -943,6 +948,187 @@
             pointer-events: none;
         }
 
+        /* ========== SEARCH RESULTS VERTICAL LIST ========== */
+        .search-results-list {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 20px;
+            margin-bottom: 30px;
+        }
+
+        .search-result-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 18px;
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 10px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border: 1px solid transparent;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .search-result-item:hover {
+            background: rgba(123, 67, 151, 0.15);
+            transform: translateX(5px);
+            border-color: rgba(123, 67, 151, 0.3);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .search-result-item.active {
+            background: rgba(123, 67, 151, 0.25);
+            border-left: 5px solid var(--primary);
+        }
+
+        .search-result-img {
+            width: 55px;
+            height: 55px;
+            border-radius: 8px;
+            object-fit: cover;
+            margin-right: 18px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+            transition: transform 0.3s ease;
+        }
+
+        .search-result-item:hover .search-result-img {
+            transform: scale(1.05);
+        }
+
+        .search-result-info {
+            flex: 1;
+            min-width: 0;
+            padding-right: 15px;
+        }
+
+        .search-result-title {
+            font-weight: 600;
+            font-size: 1.05rem;
+            margin-bottom: 5px;
+            color: var(--light);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .search-result-artist {
+            font-size: 0.9rem;
+            color: var(--gray);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .search-result-meta {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            margin-right: 15px;
+            flex-shrink: 0;
+        }
+
+        .search-result-album {
+            font-size: 0.9rem;
+            color: var(--gray);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 150px;
+        }
+
+        .search-result-duration {
+            font-size: 0.9rem;
+            color: var(--gray);
+            white-space: nowrap;
+            min-width: 50px;
+            text-align: right;
+        }
+
+        .search-result-play-btn {
+            background: var(--gradient);
+            color: white;
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            flex-shrink: 0;
+            opacity: 0.8;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .search-result-item:hover .search-result-play-btn {
+            opacity: 1;
+            transform: scale(1.1);
+            box-shadow: 0 6px 15px rgba(123, 67, 151, 0.5);
+        }
+
+        .search-result-play-btn i {
+            font-size: 1rem;
+        }
+
+        /* Mobile responsive untuk search results */
+        @media (max-width: 768px) {
+            .search-result-item {
+                padding: 10px 12px;
+            }
+            
+            .search-result-img {
+                width: 45px;
+                height: 45px;
+                margin-right: 12px;
+            }
+            
+            .search-result-title {
+                font-size: 0.95rem;
+            }
+            
+            .search-result-artist {
+                font-size: 0.8rem;
+            }
+            
+            .search-result-album {
+                display: none;
+            }
+            
+            .search-result-duration {
+                font-size: 0.8rem;
+                min-width: 45px;
+            }
+            
+            .search-result-play-btn {
+                width: 35px;
+                height: 35px;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .search-result-meta {
+                gap: 10px;
+                margin-right: 10px;
+            }
+            
+            .search-result-duration {
+                font-size: 0.75rem;
+                min-width: 40px;
+            }
+            
+            .search-result-play-btn {
+                width: 32px;
+                height: 32px;
+            }
+            
+            .search-result-play-btn i {
+                font-size: 0.85rem;
+            }
+        }
+
         /* Search Results */
         .search-results-section {
             display: none;
@@ -957,27 +1143,6 @@
             color: var(--gray);
             margin-bottom: 25px;
             font-size: 1rem;
-        }
-
-        .search-results-carousel {
-            display: flex;
-            gap: 20px;
-            overflow-x: auto;
-            overflow-y: hidden;
-            scroll-snap-type: x mandatory;
-            padding-bottom: 15px;
-            scrollbar-width: none;
-            -ms-overflow-style: none;
-        }
-        
-        .search-results-carousel::-webkit-scrollbar {
-            display: none;
-        }
-
-        .search-results-carousel .music-card {
-            flex: 0 0 auto;
-            width: 200px;
-            scroll-snap-align: start;
         }
 
         /* History Section */
@@ -2101,13 +2266,15 @@
                     </div>
                 </div>
 
-                <!-- Hasil Pencarian - CAROUSEL -->
+                <!-- Hasil Pencarian - VERTICAL LIST (UPDATED) -->
                 <div id="searchResultsSection" class="search-results-section">
                     <div class="section-header">
                         <h2 class="section-title">Hasil Pencarian</h2>
                     </div>
                     <p class="results-info" id="resultsInfo">Menampilkan hasil untuk "<strong id="searchQuery"></strong>"</p>
-                    <div class="search-results-carousel" id="searchResultsCarousel"></div>
+                    
+                    <!-- Container untuk list vertikal hasil pencarian -->
+                    <div class="search-results-list" id="searchResultsList"></div>
                 </div>
 
                 <!-- Halaman Riwayat - GRID VERTIKAL -->
@@ -2195,7 +2362,7 @@
     <script>
         // ========== MUSIC LIBRARY ==========
         const musicLibrary = [
-{
+            {
                 id: 1,
                 title: "Pyphone Marone",
                 artist: "Wiz Khalifa",
@@ -2243,7 +2410,7 @@
                 popular: false,
                 lyrics: "Karena kamu aku bisa bertahan\nKarena kamu aku tetap berdiri\nMeski badai menghantam kehidupan\nKau selalu ada untukku"
             },
-            {
+                       {
                 id: 5,
                 title: "Dj Mojang Priangan",
                 artist: "Nining Meida",
@@ -4255,7 +4422,7 @@
         const popularCarousel = document.getElementById('popularCarousel');
         const recommendedCarousel = document.getElementById('recommendedCarousel');
         const startListeningList = document.getElementById('startListeningList');
-        const searchResultsCarousel = document.getElementById('searchResultsCarousel');
+        const searchResultsList = document.getElementById('searchResultsList');
         const homeSection = document.getElementById('homeSection');
         const searchResultsSection = document.getElementById('searchResultsSection');
         const historySection = document.getElementById('historySection');
@@ -4268,6 +4435,42 @@
         const searchQuery = document.getElementById('searchQuery');
         const splashScreen = document.getElementById('splashScreen');
         const appContainer = document.getElementById('appContainer');
+
+        // ========== FUNGSI OPEN FULLSCREEN ==========
+        function openFullscreen(song) {
+            const fullscreenPlayer = document.getElementById('fullscreenPlayer');
+            const lyricsContainer = document.getElementById('lyricsContainer');
+            
+            // Update fullscreen info dengan data lagu
+            document.getElementById('fullscreenAlbumArt').src = song.img;
+            document.getElementById('fullscreenSongTitle').textContent = song.title;
+            document.getElementById('fullscreenSongArtist').textContent = song.artist;
+            document.getElementById('fullscreenSongAlbum').textContent = song.album;
+            
+            // Update lyrics jika tersedia
+            const lyricsContent = document.getElementById('lyricsContent');
+            if (song.lyrics) {
+                lyricsContent.textContent = song.lyrics;
+            } else {
+                lyricsContent.textContent = 'Lirik tidak tersedia untuk lagu ini.';
+            }
+            
+            // Sembunyikan lyrics container secara default saat membuka fullscreen
+            lyricsContainer.classList.remove('active');
+            
+            // Update posisi lagu saat ini (opsional, jika ingin sinkron dengan player)
+            const songIndex = musicLibrary.findIndex(s => s.id === song.id);
+            if (songIndex !== -1 && songIndex !== currentSongIndex) {
+                // Opsional: ganti lagu yang sedang diputar saat double click
+                // playSongFromIndex(songIndex);
+            }
+            
+            // Tampilkan fullscreen player
+            fullscreenPlayer.classList.add('active');
+            document.body.style.overflow = 'hidden';
+            
+            console.log(`Fullscreen opened for: ${song.title} - ${song.artist}`);
+        }
 
         // ========== MEDIA SESSION API INTEGRATION ==========
         function setupMediaSession() {
@@ -4347,6 +4550,108 @@
             navigator.mediaSession.playbackState = isPlaying ? 'playing' : 'paused';
         }
 
+        // ===== FUNGSI UNTUK MUSIC CONTROLS PLUGIN =====
+        function updateMusicControls(isPlaying, song) {
+            if (typeof MusicControls === 'undefined' || !song) return;
+            
+            try {
+                MusicControls.create({
+                    track       : song.title || 'Unknown',
+                    artist      : song.artist || 'Unknown',
+                    album       : song.album || 'Unknown',
+                    cover       : song.img || '',
+                    isPlaying   : isPlaying,
+                    duration    : song.duration || 0,
+                    elapsed     : audio ? Math.floor(audio.currentTime) : 0,
+                    
+                    // Tampilan
+                    dismissable : false,
+                    hasPrev     : true,
+                    hasNext     : true,
+                    hasClose    : true,
+                    hasPlayPause: true,
+                    
+                    // Untuk lockscreen
+                    ticker      : 'Now playing: ' + song.title,
+                    playIcon    : 'media_play',
+                    pauseIcon   : 'media_pause',
+                    prevIcon    : 'media_prev',
+                    nextIcon    : 'media_next',
+                    closeIcon   : 'media_close',
+                    
+                    // Notifikasi style
+                    notificationIcon: 'notification'
+                });
+                
+                console.log('MusicControls updated');
+            } catch(e) {
+                console.error('Error updating MusicControls:', e);
+            }
+        }
+
+        function initMusicControls() {
+            // Cek apakah plugin tersedia
+            if (typeof MusicControls === 'undefined') {
+                console.log('MusicControls plugin not available');
+                return;
+            }
+            
+            // Subscribe ke event dari notifikasi
+            MusicControls.subscribe(function(action) {
+                try {
+                    const message = JSON.parse(action).message;
+                    console.log('MusicControls action:', message);
+                    
+                    switch(message) {
+                        case 'music-controls-play':
+                            if (!isPlaying) togglePlayPause();
+                            break;
+                        case 'music-controls-pause':
+                            if (isPlaying) togglePlayPause();
+                            break;
+                        case 'music-controls-next':
+                            playNextSong();
+                            break;
+                        case 'music-controls-previous':
+                            playPrevSong();
+                            break;
+                        case 'music-controls-destroy':
+                            audio.pause();
+                            break;
+                        case 'music-controls-toggle-play-pause':
+                            togglePlayPause();
+                            break;
+                        default:
+                            console.log('Unknown action:', message);
+                    }
+                } catch(e) {
+                    console.error('Error parsing MusicControls action:', e);
+                }
+            });
+
+            // Mulai listen
+            MusicControls.listen();
+        }
+
+        function destroyMusicControls() {
+            if (typeof MusicControls !== 'undefined') {
+                MusicControls.destroy();
+            }
+        }
+
+        // ===== FUNGSI NEXT/PREV UNTUK NOTIFIKASI =====
+        window.playNextSong = function() {
+            let nextIndex = currentSongIndex + 1;
+            if (nextIndex >= musicLibrary.length) nextIndex = 0;
+            playSongFromIndex(nextIndex);
+        };
+
+        window.playPrevSong = function() {
+            let prevIndex = currentSongIndex - 1;
+            if (prevIndex < 0) prevIndex = musicLibrary.length - 1;
+            playSongFromIndex(prevIndex);
+        };
+
         // ========== SPLASH SCREEN FUNCTION ==========
         function hideSplashScreen() {
             setTimeout(() => {
@@ -4394,11 +4699,25 @@
             // Set initial listen history
             listenHistory = [...musicLibrary].slice(0, 3);
             
-            // Initialize empty search results carousel
+            // Initialize empty search results list
             clearSearchResults();
 
             // Hide splash screen after initialization
             hideSplashScreen();
+
+            // ===== TAMBAHKAN INI: CEK CORDOVA READY =====
+            document.addEventListener('deviceready', function() {
+                console.log('Cordova is ready!');
+                
+                // Inisialisasi MusicControls
+                initMusicControls();
+                
+                // Update metadata pertama kali
+                const currentSong = musicLibrary[currentSongIndex];
+                if (currentSong) {
+                    updateMusicControls(isPlaying, currentSong);
+                }
+            }, false);
         }
 
         // ========== CAROUSEL DISPLAY ==========
@@ -4429,6 +4748,13 @@
                         </div>
                     </div>
                 `;
+                
+                // EVENT: Double click pada card untuk buka fullscreen
+                musicCard.addEventListener('dblclick', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation(); // Mencegah event bubbling
+                    openFullscreen(song);
+                });
                 
                 // Play button event
                 const playBtn = musicCard.querySelector('.play-btn');
@@ -4467,6 +4793,13 @@
                     </div>
                 `;
                 
+                // EVENT: Double click pada list item untuk buka fullscreen
+                listItem.addEventListener('dblclick', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation(); // Mencegah event bubbling
+                    openFullscreen(song);
+                });
+                
                 // Play song when clicking on the item (except menu button)
                 listItem.addEventListener('click', (e) => {
                     // Cek apakah yang diklik adalah menu atau bukan
@@ -4494,14 +4827,95 @@
             });
         }
 
+        // ========== SEARCH RESULTS VERTICAL LIST DISPLAY ==========
+        function displaySearchResults(songs) {
+            if (!searchResultsList) return;
+            
+            searchResultsList.innerHTML = '';
+            
+            if (songs.length === 0) {
+                // Tampilkan pesan tidak ada hasil
+                searchResultsList.innerHTML = `
+                    <div style="width: 100%; text-align: center; padding: 60px 20px; color: var(--gray);">
+                        <i class="fas fa-search" style="font-size: 4rem; margin-bottom: 20px; opacity: 0.5;"></i>
+                        <h3 style="margin-bottom: 10px; font-size: 1.5rem;">Tidak ada hasil ditemukan</h3>
+                        <p style="font-size: 1rem;">Coba gunakan kata kunci lain</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            songs.forEach((song) => {
+                const resultItem = document.createElement('div');
+                resultItem.className = 'search-result-item';
+                if (song.id === musicLibrary[currentSongIndex]?.id) {
+                    resultItem.classList.add('active');
+                }
+                
+                resultItem.innerHTML = `
+                    <img src="${song.img}" alt="${song.title}" class="search-result-img">
+                    <div class="search-result-info">
+                        <div class="search-result-title">${song.title}</div>
+                        <div class="search-result-artist">${song.artist}</div>
+                    </div>
+                    <div class="search-result-meta">
+                        <span class="search-result-album">${song.album}</span>
+                        <span class="search-result-duration">${song.duration}</span>
+                    </div>
+                    <button class="search-result-play-btn" data-id="${song.id}">
+                        <i class="fas fa-play"></i>
+                    </button>
+                `;
+                
+                // EVENT: Double click pada item untuk buka fullscreen
+                resultItem.addEventListener('dblclick', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    openFullscreen(song);
+                });
+                
+                // EVENT: Klik pada item (selain tombol play) untuk memutar lagu
+                resultItem.addEventListener('click', (e) => {
+                    // Cek apakah yang diklik adalah tombol play
+                    if (e.target.closest('.search-result-play-btn')) return;
+                    
+                    const songIndex = musicLibrary.findIndex(s => s.id === song.id);
+                    playSongFromIndex(songIndex);
+                    
+                    // Update active class di semua item
+                    document.querySelectorAll('.search-result-item').forEach(item => {
+                        item.classList.remove('active');
+                    });
+                    resultItem.classList.add('active');
+                });
+                
+                // EVENT: Tombol play
+                const playBtn = resultItem.querySelector('.search-result-play-btn');
+                playBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const songId = parseInt(playBtn.getAttribute('data-id'));
+                    const songIndex = musicLibrary.findIndex(s => s.id === songId);
+                    playSongFromIndex(songIndex);
+                    
+                    // Update active class
+                    document.querySelectorAll('.search-result-item').forEach(item => {
+                        item.classList.remove('active');
+                    });
+                    resultItem.classList.add('active');
+                });
+                
+                searchResultsList.appendChild(resultItem);
+            });
+        }
+
         // ========== CLEAR SEARCH RESULTS ==========
         function clearSearchResults() {
             // Reset search results array
             searchResults = [];
             
-            // Clear carousel HTML
-            if (searchResultsCarousel) {
-                searchResultsCarousel.innerHTML = '';
+            // Clear list HTML
+            if (searchResultsList) {
+                searchResultsList.innerHTML = '';
             }
             
             // Reset search info
@@ -4568,19 +4982,8 @@
             // Update info hasil pencarian
             resultsInfo.innerHTML = `Menampilkan <strong>${searchResults.length}</strong> hasil untuk "<strong>${query}</strong>"`;
             
-            // Tampilkan hasil pencarian
-            if (searchResults.length > 0) {
-                displayCarouselSongs(searchResults, searchResultsCarousel, "search");
-            } else {
-                // Tampilkan pesan tidak ada hasil
-                searchResultsCarousel.innerHTML = `
-                    <div style="width: 100%; text-align: center; padding: 50px 0; color: var(--gray);">
-                        <i class="fas fa-search" style="font-size: 3rem; margin-bottom: 20px; opacity: 0.5;"></i>
-                        <h3 style="margin-bottom: 10px;">Tidak ada hasil ditemukan</h3>
-                        <p>Coba gunakan kata kunci lain</p>
-                    </div>
-                `;
-            }
+            // Tampilkan hasil pencarian dalam bentuk list vertikal
+            displaySearchResults(searchResults);
         }
 
         // ========== PLAYER FUNCTIONS ==========
@@ -4596,6 +4999,11 @@
             
             // Update Media Session metadata
             updateMediaMetadata();
+            
+            // ===== TAMBAHKAN INI: UPDATE MUSIC CONTROLS =====
+            if (typeof updateMusicControls === 'function') {
+                updateMusicControls(isPlaying, song);
+            }
             
             if (isPlaying) {
                 audio.play();
@@ -4619,7 +5027,7 @@
                 }
             });
             
-            // Update vertical list items
+            // Update vertical list items (Mulai Mendengarkan)
             document.querySelectorAll('.song-list-item').forEach(item => {
                 const itemId = musicLibrary.find(s => 
                     s.title === item.querySelector('.list-item-title')?.textContent &&
@@ -4630,6 +5038,19 @@
                     item.classList.add('active');
                 } else {
                     item.classList.remove('active');
+                }
+            });
+            
+            // Update search result items
+            document.querySelectorAll('.search-result-item').forEach(item => {
+                const playBtn = item.querySelector('.search-result-play-btn');
+                if (playBtn) {
+                    const itemId = parseInt(playBtn.getAttribute('data-id'));
+                    if (itemId === songId) {
+                        item.classList.add('active');
+                    } else {
+                        item.classList.remove('active');
+                    }
                 }
             });
         }
@@ -4669,6 +5090,12 @@
             if ('mediaSession' in navigator) {
                 navigator.mediaSession.playbackState = isPlaying ? 'playing' : 'paused';
             }
+            
+            // ===== TAMBAHKAN INI: UPDATE MUSIC CONTROLS =====
+            const currentSong = musicLibrary[currentSongIndex];
+            if (currentSong && typeof updateMusicControls === 'function') {
+                updateMusicControls(isPlaying, currentSong);
+            }
         }
 
         // ========== NAVIGATION ==========
@@ -4691,9 +5118,9 @@
                 displayHistory(listenHistory);
             } else if (page === 'discover') {
                 searchResultsSection.classList.add('active');
-                displayCarouselSongs(musicLibrary, searchResultsCarousel, "discover");
                 searchQuery.textContent = 'Semua Lagu';
                 resultsInfo.innerHTML = `Menampilkan <strong>${musicLibrary.length}</strong> lagu`;
+                displaySearchResults(musicLibrary);
             }
             
             // Close mobile sidebar
@@ -4735,6 +5162,13 @@
                         </div>
                     </div>
                 `;
+                
+                // EVENT: Double click pada history card untuk buka fullscreen
+                card.addEventListener('dblclick', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    openFullscreen(item);
+                });
                 
                 const playBtn = card.querySelector('.play-btn');
                 playBtn.addEventListener('click', (e) => {
@@ -4898,22 +5332,8 @@
             
             // Fullscreen
             document.getElementById('nowPlayingImg').addEventListener('dblclick', () => {
-                document.getElementById('fullscreenPlayer').classList.add('active');
-                document.body.style.overflow = 'hidden';
-                
-                // Update fullscreen info
                 const song = musicLibrary[currentSongIndex];
-                document.getElementById('fullscreenAlbumArt').src = song.img;
-                document.getElementById('fullscreenSongTitle').textContent = song.title;
-                document.getElementById('fullscreenSongArtist').textContent = song.artist;
-                document.getElementById('fullscreenSongAlbum').textContent = song.album;
-                
-                // Update lyrics if available
-                if (song.lyrics) {
-                    document.getElementById('lyricsContent').textContent = song.lyrics;
-                } else {
-                    document.getElementById('lyricsContent').textContent = 'Lirik tidak tersedia untuk lagu ini.';
-                }
+                openFullscreen(song);
             });
             
             document.getElementById('closeFullscreen').addEventListener('click', () => {
