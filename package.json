@@ -15,7 +15,11 @@
   "license": "MIT",
   "devDependencies": {},
   "cordova": {
-    "platforms": [],
-    "plugins": {}
+    "platforms": [
+      "android"
+    ],
+    "plugins": {
+      "cordova-plugin-music-controls2": {}
+    }
   }
 }
